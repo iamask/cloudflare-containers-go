@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APIs Demo</title>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js"></script>
+</head>
+
+<body>
+  <div x-data="apiDemo()" style="margin-top:2em;">
+    <h2>API Demo</h2>
+    <button @click="callApi('/api/api1')">Call API 1</button>
+    <button @click="callApi('/api/api2')">Call API 2</button>
+    <button @click="callApi('/api/api3')">Call API 3</button>
+    <div style="margin-top:1em;">
+      <span x-show="apiLoading">Loading...</span>
+      <span x-show="apiError" x-text="apiError" style="color:red;"></span>
+      <template x-if="apiResult">
+        <div>
+          <pre x-text="JSON.stringify(apiResult, null, 2)"></pre>
+          <div>Latency: <span x-text="latency"></span> ms</div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <script>
+    function apiDemo() {
+      return {
+        apiResult: null,
+        apiLoading: false,
+        apiError: null,
+        latency: null,
+        async callApi(endpoint) {
+          this.apiResult = null;
+          this.apiError = null;
+          this.latency = null;
+          this.apiLoading = true;
+          const start = performance.now();
+          try {
+            const response = await fetch(endpoint);
+            const end = performance.now();
+            this.latency = Math.round(end - start);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            this.apiResult = await response.json();
+          } catch (err) {
+            this.apiError = err.message;
+          } finally {
+            this.apiLoading = false;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
