@@ -14,6 +14,7 @@
     <button @click="callApi('/api/api1')">Call API 1</button>
     <button @click="callApi('/api/api2')">Call API 2</button>
     <button @click="callApi('/api/api3')">Call API 3</button>
+    <button @click="callApi('/kv')">Fetch KV</button>
     <div style="margin-top:1em;">
       <span x-show="apiLoading">Loading...</span>
       <span x-show="apiError" x-text="apiError" style="color:red;"></span>
