@@ -18,6 +18,10 @@ This project demonstrates how to use Cloudflare Containers to run a Go backend, 
 **Example:**
 
 - `GET /api/api1` → Routed to a Go container instance
+- `GET /api/api2` → Routed to a Go container instance
+- `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
+- `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
+- `GET /kv` → Returns a value from Cloudflare KV storage
 - `GET /` → Returns the static frontend page
 
 ---
@@ -25,9 +29,25 @@ This project demonstrates how to use Cloudflare Containers to run a Go backend, 
 ## Go Backend (net/http)
 
 - **Framework:** Standard Go [`net/http`](https://pkg.go.dev/net/http)
-- **Endpoints:** `/api/api1`, `/api/api2`, `/api/api3` (each returns a simple JSON response)
+- **Endpoints:**
+  - `/api/api1` (returns a simple JSON response)
+  - `/api/api2` (returns a simple JSON response)
+  - `/api/heavycompute` (runs a heavy compute operation and returns the result)
+  - `/api/responseheaders` (returns the incoming request headers as JSON)
 - **Port:** Listens on port `8080` (required by Cloudflare Containers)
 - **Build:** Compiled as a single static binary using Go modules
+
+---
+
+## API Endpoints
+
+| Endpoint               | Method | Description                                         |
+| ---------------------- | ------ | --------------------------------------------------- |
+| `/api/api1`            | GET    | Returns a simple JSON response                      |
+| `/api/api2`            | GET    | Returns a simple JSON response                      |
+| `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result |
+| `/api/responseheaders` | GET    | Returns the incoming request headers as JSON        |
+| `/kv`                  | GET    | Returns a value from Cloudflare KV storage          |
 
 ---
 
