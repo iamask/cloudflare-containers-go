@@ -45,14 +45,14 @@ func heavyComputeHandler(w http.ResponseWriter, r *http.Request) {
 	n := 40
 	result := fib(n)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Heavy compute done!",
+		"message": "Heavy compute done from Container!",
 		"fib": result,
 		"n": n,
 	})
 }
 
 func main() {
-	http.HandleFunc("/api/api1", apiHandler("This is API 1!", 101))
+	http.HandleFunc("/api/api1", apiHandler("From Container!", 101))
 	http.HandleFunc("/api/heavycompute", heavyComputeHandler)
 	http.HandleFunc("/api/responseheaders", responseHeadersHandler)
 	http.ListenAndServe(":8080", nil)
