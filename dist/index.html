@@ -1,21 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>APIs Demo</title>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js"></script>
+  <style>
+    pre {
+      text-align: left;
+      background-color: #f5f5f5;
+      padding: 1em;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow-x: auto;
+      font-family: Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
 </head>
-
 <body>
-  <div x-data="apiDemo()" style="margin-top:2em;">
+  <div x-data="apiDemo()" style="margin-top:2em; text-align:center;">
     <h2>API Demo</h2>
-    <button @click="callApi('/api/api1')">Call API 1</button>
-    <button @click="callApi('/api/api2')">Call API 2</button>
-    <button @click="callApi('/api/heavycompute')">Heavy Compute</button>
-    <button @click="callApi('/kv')">Fetch KV</button>
-    <button @click="callApi('/api/responseheaders')">Show Request Headers</button>
+    <div style="margin-bottom:1em;">
+      <button @click="callApi('/api/api1')">JSON</button>
+      <button @click="callApi('/api/heavycompute')">Heavy Compute</button>
+      <button @click="callApi('/kv')">Fetch KV</button>
+      <button @click="callApi('/api/responseheaders')">Show Request Headers</button>
+      <button @click="fetchImage()">Show 50x50 Image</button>
+      <input x-model="aiPrompt" placeholder="AI prompt" style="margin-left:8px;" />
+      <button @click="callAi()">Ask AI</button>
+    </div>
     <div style="margin-top:1em;">
       <span x-show="apiLoading">Loading...</span>
       <span x-show="apiError" x-text="apiError" style="color:red;"></span>
@@ -25,9 +43,11 @@
           <div>Latency: <span x-text="latency"></span> ms</div>
         </div>
       </template>
+      <template x-if="imageUrl">
+        <img :src="imageUrl" width="50" height="50" style="margin-top:1em;" />
+      </template>
     </div>
   </div>
-
   <script>
     function apiDemo() {
       return {
@@ -35,10 +55,13 @@
         apiLoading: false,
         apiError: null,
         latency: null,
+        imageUrl: null,
+        aiPrompt: '',
         async callApi(endpoint) {
           this.apiResult = null;
           this.apiError = null;
           this.latency = null;
+          this.imageUrl = null;
           this.apiLoading = true;
           const start = performance.now();
           try {
@@ -48,16 +71,44 @@
             if (!response.ok) {
               throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            this.apiResult = await response.json();
+            if (endpoint === '/image') {
+              const contentType = response.headers.get('content-type') || '';
+              if (contentType.startsWith('image/')) {
+                const blob = await response.blob();
+                this.imageUrl = URL.createObjectURL(blob);
+                this.apiResult = null;
+              } else {
+                this.apiResult = await response.json();
+                this.imageUrl = null;
+              }
+            } else {
+              let data = await response.json();
+              // If /kv and value is stringified JSON, parse it
+              if (endpoint === '/kv' && data.value && typeof data.value === 'string') {
+                try {
+                  data.value = JSON.parse(data.value);
+                } catch (_) {
+                  // leave as string if not JSON
+                }
+              }
+              this.apiResult = data;
+              this.imageUrl = null;
+            }
           } catch (err) {
             this.apiError = err.message;
           } finally {
             this.apiLoading = false;
           }
+        },
+        async fetchImage() {
+          await this.callApi('/image');
+        },
+        async callAi() {
+          const prompt = this.aiPrompt || 'What is the origin of the phrase Hello, World?';
+          await this.callApi(`/ai?prompt=${encodeURIComponent(prompt)}`);
         }
       }
     }
   </script>
 </body>
-
 </html>

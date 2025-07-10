@@ -9,6 +9,9 @@ export class Backend extends Container {
 export interface Env {
   BACKEND: DurableObjectNamespace<Backend>;
   MY_KV: KVNamespace;
+  PUBLIC: R2Bucket;
+  WORKFLOW_SERVICE: Fetcher;
+  AI: any;
 }
 
 const INSTANCE_COUNT = 3;
@@ -26,6 +29,40 @@ export default {
       // Fetch a value from KV
       const value = await env.MY_KV.get("demo-key");
       return new Response(JSON.stringify({ key: "demo-key", value }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (url.pathname === "/image") {
+      // Fetch image from R2 and resize using fetch(..., { cf: { image: ... } })
+      const imageKey = "ai-generated/1746948849155-zjng9a.jpg";
+      const r2Object = await env.PUBLIC.get(imageKey);
+      if (!r2Object || !r2Object.body) {
+        return new Response("Image not found", { status: 404 });
+      }
+      // Return the R2 object's body directly, do not read it before returning
+      return new Response(r2Object.body, {
+        headers: {
+          "Content-Type": r2Object.httpMetadata?.contentType || "image/jpeg",
+        },
+        cf: {
+          image: {
+            width: 50,
+            height: 50,
+            fit: "cover",
+            format: "avif",
+          },
+        },
+      });
+    }
+    if (url.pathname === "/ai") {
+      const prompt =
+        url.searchParams.get("prompt") ||
+        "What is the origin of the phrase Hello, World?";
+      const response = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+        prompt,
+      });
+      return new Response(JSON.stringify(response), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

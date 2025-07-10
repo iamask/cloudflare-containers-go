@@ -1,8 +1,28 @@
 # Cloudflare Containers Demo: Go Backend + TypeScript Worker
 
-## Overview
+## Architecture Overview
 
-This project demonstrates how to use Cloudflare Containers to run a Go backend, with a Cloudflare Worker (TypeScript) acting as a gateway and a static frontend. It is designed for clarity and as a demo for Cloudflare Containers.
+```mermaid
+graph TD;
+    A[cloudflare-containers-go]
+    A -- "Workers AI" --> AI[AI]
+    A -- "Durable Object" --> BACKEND[BACKEND]
+    A -- "Images" --> IMAGES[IMAGES]
+    A -- "KV namespace" --> MY_KV[MY_KV]
+    A -- "R2 bucket" --> PUBLIC[PUBLIC]
+```
+
+---
+
+## Endpoint to Resource Mapping
+
+| Endpoint Pattern      | Cloudflare Resource        | Description                       |
+| --------------------- | -------------------------- | --------------------------------- |
+| `/api/*`              | Durable Object (Container) | Proxies to Go backend container   |
+| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV  |
+| `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 |
+| `/ai`                 | Workers AI                 | Runs inference using Workers AI   |
+| `/` (static frontend) | Static Asset               | Served from Worker/dist           |
 
 ---
 
@@ -31,7 +51,6 @@ This project demonstrates how to use Cloudflare Containers to run a Go backend, 
 - **Framework:** Standard Go [`net/http`](https://pkg.go.dev/net/http)
 - **Endpoints:**
   - `/api/api1` (returns a simple JSON response)
-  - `/api/api2` (returns a simple JSON response)
   - `/api/heavycompute` (runs a heavy compute operation and returns the result)
   - `/api/responseheaders` (returns the incoming request headers as JSON)
 - **Port:** Listens on port `8080` (required by Cloudflare Containers)
@@ -44,10 +63,11 @@ This project demonstrates how to use Cloudflare Containers to run a Go backend, 
 | Endpoint               | Method | Description                                         |
 | ---------------------- | ------ | --------------------------------------------------- |
 | `/api/api1`            | GET    | Returns a simple JSON response                      |
-| `/api/api2`            | GET    | Returns a simple JSON response                      |
 | `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result |
 | `/api/responseheaders` | GET    | Returns the incoming request headers as JSON        |
 | `/kv`                  | GET    | Returns a value from Cloudflare KV storage          |
+| `/image`               | GET    | Fetches and resizes an image from R2                |
+| `/ai`                  | GET    | Runs inference using Workers AI                     |
 
 ---
 

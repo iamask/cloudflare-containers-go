@@ -53,7 +53,6 @@ func heavyComputeHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/api/api1", apiHandler("This is API 1!", 101))
-	http.HandleFunc("/api/api2", apiHandler("This is API 2!", 202))
 	http.HandleFunc("/api/heavycompute", heavyComputeHandler)
 	http.HandleFunc("/api/responseheaders", responseHeadersHandler)
 	http.ListenAndServe(":8080", nil)
