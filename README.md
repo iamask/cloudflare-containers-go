@@ -6,7 +6,7 @@
 graph TD;
     A[ Entrypoint worker cloudflare-containers-go]
     A -- "Workers AI" --> AI[AI]
-    A -- "Durable Object" --> BACKEND[BACKEND]
+    A -- "Durable Object & Container " --> BACKEND[BACKEND]
     A -- "Images" --> IMAGES[IMAGES]
     A -- "KV namespace" --> MY_KV[MY_KV]
     A -- "R2 bucket" --> PUBLIC[PUBLIC]
