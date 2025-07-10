@@ -31,17 +31,18 @@ func responseHeadersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"headers": headers})
 }
 
+func fib(n int) int {
+	if n <= 1 {
+		return n
+	}
+	return fib(n-1) + fib(n-2)
+}
+
 func heavyComputeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// Dummy heavy computation: calculate a large Fibonacci number
 	n := 40
-	fib := func(n int) int {
-		if n <= 1 {
-			return n
-		}
-		return fib(n-1) + fib(n-2)
-	}
 	result := fib(n)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Heavy compute done!",
