@@ -4,7 +4,7 @@
 
 ```mermaid
 graph TD;
-    A[Entrypoint worker | cloudflare-containers-go]
+    A[ Entrypoint worker cloudflare-containers-go]
     A -- "Workers AI" --> AI[AI]
     A -- "Durable Object" --> BACKEND[BACKEND]
     A -- "Images" --> IMAGES[IMAGES]
