@@ -1,6 +1,8 @@
-# Cloudflare Containers Demo: Go Backend + TypeScript Worker
-
 ## Full Stack Application Overview
+
+Consider Cloudflare Network as a Single Global computer that spans across 300 cities; Anything delpyed to the platform is delployed to region earth , the platform handles the routing, scaling , Peformance optmization and security while Keeping the best in class developer experience.
+
+**Network is the Computer**
 
 This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
 
