@@ -10,8 +10,9 @@ This project demonstrates a modern full stack application built entirely on Clou
 - **Database:** Cloudflare KV and Durable Objects
 - **Storage:** Cloudflare R2 (object storage)
 - **AI:** Cloudflare Workers AI for inference
+- **Image Optimization:** Cloudflare Images (resizing, format conversion)
 
-The architecture showcases how to combine edge compute, serverless storage, and AI to build scalable, performant applications with minimal infrastructure management.
+The architecture showcases how to combine edge compute, serverless storage, image optimization, and AI to build scalable, performant applications with minimal infrastructure management.
 
 ---
 
