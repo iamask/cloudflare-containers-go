@@ -42,7 +42,6 @@ graph LR;
 **Example:**
 
 - `GET /api/api1` → Routed to a Go container instance
-- `GET /api/api2` → Routed to a Go container instance
 - `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
 - `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
 - `GET /kv` → Returns a value from Cloudflare KV storage
