@@ -30,7 +30,9 @@
       <button @click="callApi('/api/heavycompute')">Heavy Compute</button>
       <button @click="callApi('/kv')">Fetch KV</button>
       <button @click="callApi('/api/responseheaders')">Show Request Headers</button>
-      <button @click="fetchImage()">Show 50x50 Image</button>
+      <input type="number" x-model.number="imgWidth" min="1" style="width:60px; margin-left:8px;" placeholder="W" />
+      <input type="number" x-model.number="imgHeight" min="1" style="width:60px; margin-left:4px;" placeholder="H" />
+      <button @click="fetchImage()">Show Image</button>
       <input x-model="aiPrompt" placeholder="AI prompt" style="margin-left:8px;" />
       <button @click="callAi()">Ask AI</button>
     </div>
@@ -57,6 +59,8 @@
         latency: null,
         imageUrl: null,
         aiPrompt: '',
+        imgWidth: 100,
+        imgHeight: 100,
         async callApi(endpoint) {
           this.apiResult = null;
           this.apiError = null;
@@ -101,7 +105,9 @@
           }
         },
         async fetchImage() {
-          await this.callApi('/image');
+          const w = this.imgWidth || 100;
+          const h = this.imgHeight || 100;
+          await this.callApi(`/image?width=${w}&height=${h}`);
         },
         async callAi() {
           const prompt = this.aiPrompt || 'What is the origin of the phrase Hello, World?';

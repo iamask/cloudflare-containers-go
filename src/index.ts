@@ -40,15 +40,17 @@ export default {
       if (!r2Object || !r2Object.body) {
         return new Response("Image not found", { status: 404 });
       }
-      // Return the R2 object's body directly, do not read it before returning
+      // Get width and height from query params, default to 100x100
+      const width = parseInt(url.searchParams.get("width") || "100", 10);
+      const height = parseInt(url.searchParams.get("height") || "100", 10);
       return new Response(r2Object.body, {
         headers: {
           "Content-Type": r2Object.httpMetadata?.contentType || "image/jpeg",
         },
         cf: {
           image: {
-            width: 50,
-            height: 50,
+            width,
+            height,
             fit: "cover",
             format: "avif",
           },

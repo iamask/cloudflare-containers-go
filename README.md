@@ -28,8 +28,8 @@ graph LR;
     A -- "/api/*" --> BACKEND["Go Backend Container"]
     A -- "/ai" --> AI["Workers AI"]
     A -- "/kv" --> KV["KV Namespace"]
-    A -- "/image" --> R2["R2 Bucket"]
-    A -- "/image (resize)" --> IMAGES["Cloudflare Images"]
+    A -- "/image ()" --> R2["R2 Bucket"]
+    A -- "/image (pristine images)" --> IMAGES["Cloudflare Images"]
     A -- "/ (static)" --> STATIC["Workers Framework /dist"]
 ```
 
@@ -37,13 +37,13 @@ graph LR;
 
 ## Endpoint to Resource Mapping
 
-| Endpoint Pattern      | Cloudflare Resource        | Description                                                    |
-| --------------------- | -------------------------- | -------------------------------------------------------------- |
-| `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                |
-| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                               |
-| `/image`              | R2 Bucket + Images         | Fetches and resizes (50x50) image from R2                      |
-| `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`) |
-| `/` (static frontend) | Static Asset               | Served from Worker/dist                                        |
+| Endpoint Pattern      | Cloudflare Resource        | Description                                                                    |
+| --------------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                                |
+| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                                               |
+| `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 (user-defined width/height, default 100x100) |
+| `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
+| `/` (static frontend) | Static Asset               | Served from Worker/dist                                                        |
 
 ---
 
@@ -65,7 +65,7 @@ graph LR;
 - `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
 - `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
 - `GET /kv` → Returns a value from Cloudflare KV storage
-- `GET /image` → Fetches and resizes an image from R2 (50x50)
+- `GET /image?width=120&height=80` → Fetches and resizes an image from R2 to 120x80 (defaults to 100x100 if not specified)
 - `GET /ai?prompt=...` → Runs inference using Workers AI with a custom prompt
 - `GET /` → Returns the static frontend page
 
@@ -89,11 +89,11 @@ graph LR;
 - **Features:**
   - API buttons for each endpoint
   - AI prompt input and response display
-  - Image fetch and display (50x50 resize)
+  - Image fetch and display (user-defined width/height, default 100x100)
   - Latency measurement for each request
   - JSON output formatting for easy reading
 - **Location:** `dist/index.html`
-- **Design:** Simple, modern, and centered layout for demo clarity
+- **Design:** Just for Demow
 
 ---
 
@@ -105,8 +105,7 @@ graph LR;
 | `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result           |
 | `/api/responseheaders` | GET    | Returns the incoming request headers as JSON                  |
 | `/kv`                  | GET    | Returns a value from Cloudflare KV storage                    |
-| `/image`               | GET    | Fetches and resizes (50x50) an image from R2 using Images     |
-| `/ai`                  | GET    | Runs inference using Workers AI (prompt via `?prompt=` param) |
+| `/image`               | GET    | Runs inference using Workers AI (prompt via `?prompt=` param) |
 
 ---
 
