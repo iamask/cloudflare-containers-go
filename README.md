@@ -30,7 +30,7 @@ graph LR;
     A -- "/kv" --> KV["KV Namespace"]
     A -- "/image" --> R2["R2 Bucket"]
     A -- "/image (resize)" --> IMAGES["Cloudflare Images"]
-    A -- "/ (static)" --> STATIC["Static Frontend"]
+    A -- "/ (static)" --> STATIC["Workers Framework /dist"]
 ```
 
 ---
