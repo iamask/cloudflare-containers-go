@@ -2,6 +2,10 @@
 
 Think of the Cloudflare Network as a single, global computer operating across 300+ cities. When you deploy to Cloudflare, your application is deployed to "Region Earth" - a unified global region. The platform takes care of intelligent routing, seamless scaling, performance optimization, and robust security, all while delivering a world-class developer experience.
 
+Use your favourite IDE > run `wrangler deploy` > Application is instantly deployed to the massive distributed computer
+
+---
+
 This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
 
 - **Frontend:** Served on the Workers framework ([Any favourite framework](https://developers.cloudflare.com/workers/framework-guides/))
