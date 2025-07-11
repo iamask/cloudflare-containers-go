@@ -4,7 +4,7 @@ Think of the Cloudflare Network as a single, global computer operating across 30
 
 This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
 
-- **Frontend:** Served on the Workers framework (static HTML/JS, Alpine.js)
+- **Frontend:** Served on the Workers framework ([Any favourite framework](https://developers.cloudflare.com/workers/framework-guides/))
 - **Routing:** All requests are routed via a TypeScript Worker
 - **Backend:** Go services running in Cloudflare Containers (handles heavy compute)
 - **Database:** Cloudflare KV and Durable Objects
