@@ -1,5 +1,20 @@
 # Cloudflare Containers Demo: Go Backend + TypeScript Worker
 
+## Full Stack Application Overview
+
+This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
+
+- **Frontend:** Served on the Workers framework (static HTML/JS, Alpine.js)
+- **Routing:** All requests are routed via a TypeScript Worker
+- **Backend:** Go services running in Cloudflare Containers (handles heavy compute)
+- **Database:** Cloudflare KV and Durable Objects
+- **Storage:** Cloudflare R2 (object storage)
+- **AI:** Cloudflare Workers AI for inference
+
+The architecture showcases how to combine edge compute, serverless storage, and AI to build scalable, performant applications with minimal infrastructure management.
+
+---
+
 ## Architecture Overview
 
 ```mermaid
