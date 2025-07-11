@@ -14,15 +14,30 @@ graph TD;
 
 ---
 
+## Request Flow Example
+
+```mermaid
+graph LR;
+    USER["User"] --> HTTP["HTTP request"] --> A["Entrypoint worker cloudflare-containers-go"]
+    A -- "/api/*" --> BACKEND["Go Backend Container"]
+    A -- "/ai" --> AI["Workers AI"]
+    A -- "/kv" --> KV["KV Namespace"]
+    A -- "/image" --> R2["R2 Bucket"]
+    A -- "/image (resize)" --> IMAGES["Cloudflare Images"]
+    A -- "/ (static)" --> STATIC["Static Frontend"]
+```
+
+---
+
 ## Endpoint to Resource Mapping
 
-| Endpoint Pattern      | Cloudflare Resource        | Description                       |
-| --------------------- | -------------------------- | --------------------------------- |
-| `/api/*`              | Durable Object (Container) | Proxies to Go backend container   |
-| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV  |
-| `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 |
-| `/ai`                 | Workers AI                 | Runs inference using Workers AI   |
-| `/` (static frontend) | Static Asset               | Served from Worker/dist           |
+| Endpoint Pattern      | Cloudflare Resource        | Description                                                    |
+| --------------------- | -------------------------- | -------------------------------------------------------------- |
+| `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                |
+| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                               |
+| `/image`              | R2 Bucket + Images         | Fetches and resizes (50x50) image from R2                      |
+| `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`) |
+| `/` (static frontend) | Static Asset               | Served from Worker/dist                                        |
 
 ---
 
@@ -31,6 +46,9 @@ graph TD;
 - **Entrypoint:** `src/index.ts` (TypeScript)
 - **Routing logic:**
   - Requests to `/api/*` are proxied to backend containers (Go services) using Cloudflare's container orchestration.
+  - `/kv` fetches from Cloudflare KV.
+  - `/image` fetches and resizes an image from R2 using Cloudflare Images (`cf: { image: ... }`).
+  - `/ai` runs inference using Workers AI (prompt customizable via query param).
   - All other requests (e.g., `/`) return static assets (the frontend HTML/JS in `dist/`).
 - **Load Balancing:**
   - The Worker uses the `getRandom` helper from `@cloudflare/containers` to distribute API requests across multiple backend container instances.
@@ -42,6 +60,8 @@ graph TD;
 - `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
 - `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
 - `GET /kv` → Returns a value from Cloudflare KV storage
+- `GET /image` → Fetches and resizes an image from R2 (50x50)
+- `GET /ai?prompt=...` → Runs inference using Workers AI with a custom prompt
 - `GET /` → Returns the static frontend page
 
 ---
@@ -58,16 +78,30 @@ graph TD;
 
 ---
 
+## Frontend
+
+- **Framework:** Minimal static HTML/JS using [Alpine.js](https://alpinejs.dev/) for reactivity
+- **Features:**
+  - API buttons for each endpoint
+  - AI prompt input and response display
+  - Image fetch and display (50x50 resize)
+  - Latency measurement for each request
+  - JSON output formatting for easy reading
+- **Location:** `dist/index.html`
+- **Design:** Simple, modern, and centered layout for demo clarity
+
+---
+
 ## API Endpoints
 
-| Endpoint               | Method | Description                                         |
-| ---------------------- | ------ | --------------------------------------------------- |
-| `/api/api1`            | GET    | Returns a simple JSON response                      |
-| `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result |
-| `/api/responseheaders` | GET    | Returns the incoming request headers as JSON        |
-| `/kv`                  | GET    | Returns a value from Cloudflare KV storage          |
-| `/image`               | GET    | Fetches and resizes an image from R2                |
-| `/ai`                  | GET    | Runs inference using Workers AI                     |
+| Endpoint               | Method | Description                                                   |
+| ---------------------- | ------ | ------------------------------------------------------------- |
+| `/api/api1`            | GET    | Returns a simple JSON response                                |
+| `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result           |
+| `/api/responseheaders` | GET    | Returns the incoming request headers as JSON                  |
+| `/kv`                  | GET    | Returns a value from Cloudflare KV storage                    |
+| `/image`               | GET    | Fetches and resizes (50x50) an image from R2 using Images     |
+| `/ai`                  | GET    | Runs inference using Workers AI (prompt via `?prompt=` param) |
 
 ---
 
@@ -99,7 +133,7 @@ graph TD;
 ## Project Structure
 
 ```
-cloudflare-containers-fe-be-go/
+cloudflare-containers-go/
 ├── container_src/         # Go backend source code (net/http API)
 │   ├── main.go            # Main Go application entrypoint
 │   └── go.mod             # Go module manifest
@@ -125,3 +159,4 @@ cloudflare-containers-fe-be-go/
 - The Worker acts as a smart gateway, routing API requests to containers and serving static content for all other routes
 - The Go backend uses the standard library for fast, minimal HTTP handling and is built for minimal, containerized deployment
 - The project is ready for Cloudflare's container orchestration, with all ports and entrypoints configured for compatibility
+- The frontend is intentionally minimal and modern, focusing on clarity and usability for demo purposes.
