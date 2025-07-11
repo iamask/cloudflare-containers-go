@@ -2,7 +2,7 @@
 
 Think of the Cloudflare Network as a single, global computer operating across 300+ cities. When you deploy to Cloudflare, your application is deployed to "Region Earth" — a unified global region. The platform takes care of intelligent routing, seamless scaling, performance optimization, and robust security, all while delivering a world-class developer experience.
 
-**Network is the Computer**
+**Network is the Computer[https://blog.cloudflare.com/the-network-is-the-computer/]**
 
 This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
 
