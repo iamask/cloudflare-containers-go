@@ -75,7 +75,7 @@
             if (!response.ok) {
               throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            if (endpoint === '/image') {
+            if (endpoint.startsWith('/image')) {
               const contentType = response.headers.get('content-type') || '';
               if (contentType.startsWith('image/')) {
                 const blob = await response.blob();
