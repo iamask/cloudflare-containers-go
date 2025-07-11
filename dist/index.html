@@ -30,8 +30,8 @@
       <button @click="callApi('/api/heavycompute')">Heavy Compute</button>
       <button @click="callApi('/kv')">Fetch KV</button>
       <button @click="callApi('/api/responseheaders')">Show Request Headers</button>
-      <input type="number" x-model.number="imgWidth" min="1" style="width:60px; margin-left:8px;" placeholder="W" />
-      <input type="number" x-model.number="imgHeight" min="1" style="width:60px; margin-left:4px;" placeholder="H" />
+      <input type="number" x-model.number="imgWidth" min="1" style="width:60px; margin-left:8px;" placeholder="W" @input="imageUrl = null" />
+      <input type="number" x-model.number="imgHeight" min="1" style="width:60px; margin-left:4px;" placeholder="H" @input="imageUrl = null" />
       <button @click="fetchImage()">Show Image</button>
       <input x-model="aiPrompt" placeholder="AI prompt" style="margin-left:8px;" />
       <button @click="callAi()">Ask AI</button>
@@ -46,7 +46,10 @@
         </div>
       </template>
       <template x-if="imageUrl">
-        <img :src="imageUrl" :width="imgWidth" :height="imgHeight" style="margin-top:1em;" />
+        <div>
+          <img :src="imageUrl" :width="imgWidth" :height="imgHeight" style="margin-top:1em;" />
+          <div>Latency: <span x-text="latency"></span> ms</div>
+        </div>
       </template>
     </div>
   </div>
