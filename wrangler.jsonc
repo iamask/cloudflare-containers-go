@@ -67,11 +67,11 @@
 	"ai": {
 		"binding": "AI"
 	},
-//   "secrets_store_secrets": [
-//     {
-//       "binding": "SECRET_STORE",
-//       "store_id": "demo",
-//       "secret_name": "ACCOUNT_API_KEY"
-//     }
-//   ]
+  "secrets_store_secrets": [
+    {
+      "binding": "SECRET_STORE",
+      "store_id": "17b1a325d8084ec087e87dda53cffd6b",
+      "secret_name": "ACCOUNT_API_KEY"
+    }
+  ]
 }

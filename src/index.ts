@@ -3,6 +3,7 @@ import { Container, getRandom } from "@cloudflare/containers";
 
 export class Backend extends Container {
   defaultPort = 8080;
+  // manualStart = true;
   sleepAfter = "2h"; // Override sleep timeout
   autoscale = true; //unreleased feature
   //enableInternet = false;   // Whether to enable internet access for the container
@@ -15,16 +16,17 @@ export class Backend extends Container {
     ANOTHER_VAR: "custom_another_value",
     APP_ENV: "production",
     MESSAGE: "Start Time: " + new Date().toISOString(),
-    //  ACCOUNT_NAME: env.ACCOUNT_NAME,
     // LOG_LEVEL: 'info',
-    //  MY_SECRET: this.env.MY_SECRET,
-    // default env variables : https://developers.cloudflare.com/containers/platform-details/#environment-variables
+    //  MY_SECRET: env.MY_SECRET, // Alpah feature
+    // default env variables also available to the instance : https://developers.cloudflare.com/containers/platform-details/#environment-variables
   };
 
   //  Lifecycle method called when container starts | https://github.com/cloudflare/containers
   //  Example : https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/#setting-environment-variables-per-instance
   override onStart(): void {
     console.log("Container started! or set Env variables");
+    // Log the dynamic secret passed at runtime
+    // console.log("ACCOUNT_API_KEY:", process.env.ACCOUNT_API_KEY);
   }
   override onStop() {
     console.log("Container successfully shut down");
@@ -43,6 +45,7 @@ export interface Env {
   PUBLIC: R2Bucket;
   WORKFLOW_SERVICE: Fetcher;
   AI: any;
+  SECRET_STORE: SecretsStoreSecret;
 }
 
 const INSTANCE_COUNT = 2;
