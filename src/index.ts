@@ -6,24 +6,29 @@ export class Backend extends Container {
   sleepAfter = "2h"; // Override sleep timeout
   autoscale = true; //unreleased feature
   //enableInternet = false;   // Whether to enable internet access for the container
-  //Example Custom entrypoint to run in the container;Not applicable in this application
-  //entrypoint = ['node', 'server.js', '--config', 'production.json'];
+
+  //entrypoint = ['node', 'server.js', '--config', 'production.json'];   //Example Custom entrypoint to run in the container;Not applicable in this application
+
+  //custom env variables accssible within the conatiner
   envVars = {
-    //custom env variables accssible within the conatiner
     MY_CUSTOM_VAR: "custom_value",
     ANOTHER_VAR: "custom_another_value",
     APP_ENV: "production",
+    MESSAGE: "Start Time: " + new Date().toISOString(),
+    //  ACCOUNT_NAME: env.ACCOUNT_NAME,
     // LOG_LEVEL: 'info',
     //  MY_SECRET: this.env.MY_SECRET,
     // default env variables : https://developers.cloudflare.com/containers/platform-details/#environment-variables
   };
 
-  //optional lifecycle methods https://github.com/cloudflare/containers
-  // Lifecycle method called when container starts
+  //  Lifecycle method called when container starts | https://github.com/cloudflare/containers
+  //  Example : https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/#setting-environment-variables-per-instance
   override onStart(): void {
-    console.log("Container started!");
+    console.log("Container started! or set Env variables");
   }
-  //optional
+  override onStop() {
+    console.log("Container successfully shut down");
+  }
   // Lifecycle method called on errors
   override onError(error: unknown): any {
     console.error("Container error:", error);
@@ -50,6 +55,7 @@ export default {
     // Default implementation forwards requests to the container
     // This will automatically renew the activity timeout
     const url = new URL(request.url);
+
     // route request to the backend container
     if (url.pathname.startsWith("/api")) {
       // note: "getRandom" to be replaced with latency-aware routing in the near future
@@ -107,6 +113,7 @@ export default {
         headers: { "Content-Type": "application/json" },
       });
     }
+
     return new Response("Not Found", { status: 404 });
   },
 };

@@ -66,5 +66,12 @@
 	],
 	"ai": {
 		"binding": "AI"
-	}
+	},
+//   "secrets_store_secrets": [
+//     {
+//       "binding": "SECRET_STORE",
+//       "store_id": "demo",
+//       "secret_name": "ACCOUNT_API_KEY"
+//     }
+//   ]
 }
