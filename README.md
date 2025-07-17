@@ -15,6 +15,7 @@ This project demonstrates a modern full stack application built entirely on Clou
 - **Storage:** Cloudflare R2 (object storage)
 - **AI:** Cloudflare Workers AI for inference
 - **Image Optimization:** Cloudflare Images (resizing, format conversion)
+- **Secrets Management:** Cloudflare Secrets Store (configured but not actively used in current endpoints)
 
 The architecture showcases how to combine edge compute, serverless storage, image optimization, and AI to build scalable, performant applications with minimal infrastructure management.
 
@@ -45,6 +46,8 @@ graph LR;
 | `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
 | `/` (static frontend) | Static Asset               | Served from Worker/dist                                                        |
 
+**Note:** The application also has Cloudflare Secrets Store configured (`SECRET_STORE` binding) for secure secret management, though it's not currently utilized by any active endpoints.
+
 ---
 
 ## How Routing Works (`src/index.ts`)
@@ -71,6 +74,24 @@ graph LR;
 
 ---
 
+## Secrets Store Configuration
+
+The application is configured with Cloudflare Secrets Store for secure secret management:
+
+- **Binding:** `SECRET_STORE` (defined in `wrangler.jsonc`)
+- **Store ID:** `17b1a325d8084ec087e87dda53cffd6b`
+- **Secret Name:** `ACCOUNT_API_KEY`
+- **Usage:** Currently configured but not actively used by any endpoints
+- **Purpose:** Ready for future implementation of secure API key management or other sensitive data handling
+
+To use the secret in your code:
+```typescript
+// In your worker's fetch handler
+const secretValue = await env.SECRET_STORE.get();
+```
+
+---
+
 ## Go Backend (net/http)
 
 - **Framework:** Standard Go [`net/http`](https://pkg.go.dev/net/http)
@@ -91,6 +112,7 @@ graph LR;
   - AI prompt input and response display
   - Image fetch and display (user-defined width/height, default 100x100)
   - Latency measurement for each request
+  - Real-time error handling and loading states
   - JSON output formatting for easy reading
 - **Location:** `dist/index.html`
 - **Design:** Just for Demow
