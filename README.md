@@ -16,6 +16,7 @@ This project demonstrates a modern full stack application built entirely on Clou
 - **AI:** Cloudflare Workers AI for inference
 - **Image Optimization:** Cloudflare Images (resizing, format conversion)
 - **Secrets Management:** Cloudflare Secrets Store (configured but not actively used in current endpoints)
+- **Service Bindings:** Worker-to-Worker communication via service bindings
 
 The architecture showcases how to combine edge compute, serverless storage, image optimization, and AI to build scalable, performant applications with minimal infrastructure management.
 
@@ -31,6 +32,7 @@ graph LR;
     A -- "/kv" --> KV["KV Namespace"]
     A -- "/image ()" --> R2["R2 Bucket"]
     A -- "/image (pristine images)" --> IMAGES["Cloudflare Images"]
+    A -- "/worker/*" --> SERVICE["Service Worker: cloudflare-containers-go-service-worker"]
     A -- "/ (static)" --> STATIC["Workers Framework /dist"]
 ```
 
@@ -44,6 +46,7 @@ graph LR;
 | `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                                               |
 | `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 (user-defined width/height, default 100x100) |
 | `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
+| `/worker/*`           | Service Binding            | Routes to bound service worker `cloudflare-containers-go-service-worker`       |
 | `/` (static frontend) | Static Asset               | Served from Worker/dist                                                        |
 
 **Note:** The application also has Cloudflare Secrets Store configured (`SECRET_STORE` binding) for secure secret management, though it's not currently utilized by any active endpoints.
@@ -74,6 +77,44 @@ graph LR;
 
 ---
 
+## Service Bindings Configuration
+
+The application uses Cloudflare Service Bindings for Worker-to-Worker communication:
+
+- **Binding:** `WORKER_SERVICE` (defined in `wrangler.jsonc`)
+- **Target Service:** `cloudflare-containers-go-service-worker`
+- **Route Pattern:** `/worker/*`
+- **Purpose:** Enables direct communication between workers without going through the public internet
+
+**Benefits:**
+
+- Zero-latency communication between workers
+- No external HTTP requests
+- Automatic authentication and authorization
+- Type-safe RPC calls (when using RPC-style service bindings)
+
+**Usage Example:**
+
+```typescript
+// Forward requests to the bound service
+if (url.pathname.startsWith("/worker")) {
+  return env.WORKER_SERVICE.fetch(request);
+}
+```
+
+**Configuration in `wrangler.jsonc`:**
+
+```jsonc
+"services": [
+  {
+    "binding": "WORKER_SERVICE",
+    "service": "cloudflare-containers-go-service-worker"
+  }
+]
+```
+
+---
+
 ## Secrets Store Configuration
 
 The application is configured with Cloudflare Secrets Store for secure secret management:
@@ -85,6 +126,7 @@ The application is configured with Cloudflare Secrets Store for secure secret ma
 - **Purpose:** Ready for future implementation of secure API key management or other sensitive data handling
 
 To use the secret in your code:
+
 ```typescript
 // In your worker's fetch handler
 const secretValue = await env.SECRET_STORE.get();

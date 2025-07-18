@@ -1,28 +1,21 @@
-// import { Hono } from "hono";
 import { Container, getRandom } from "@cloudflare/containers";
 
 export class Backend extends Container {
   defaultPort = 8080;
   // manualStart = true;
-  sleepAfter = "2h"; // Override sleep timeout
+  sleepAfter = "2h";
   autoscale = true; //unreleased feature
-  //enableInternet = false;   // Whether to enable internet access for the container
-
-  //entrypoint = ['node', 'server.js', '--config', 'production.json'];   //Example Custom entrypoint to run in the container;Not applicable in this application
+  //enableInternet = false;
 
   //custom env variables accssible within the conatiner
   envVars = {
-    MY_CUSTOM_VAR: "custom_value",
-    ANOTHER_VAR: "custom_another_value",
     APP_ENV: "production",
     MESSAGE: "Start Time: " + new Date().toISOString(),
     // LOG_LEVEL: 'info',
-    //  MY_SECRET: env.MY_SECRET, // Alpah feature
-    // default env variables also available to the instance : https://developers.cloudflare.com/containers/platform-details/#environment-variables
+    // MY_SECRET: env.MY_SECRET,
   };
 
-  //  Lifecycle method called when container starts | https://github.com/cloudflare/containers
-  //  Example : https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/#setting-environment-variables-per-instance
+  //  Lifecycle method examples
   override onStart(): void {
     console.log("Container started! or set Env variables");
     // Log the dynamic secret passed at runtime
@@ -46,17 +39,14 @@ export interface Env {
   WORKFLOW_SERVICE: Fetcher;
   AI: any;
   SECRET_STORE: SecretsStoreSecret;
+  WORKER_SERVICE: Fetcher;
 }
 
 const INSTANCE_COUNT = 2;
 
 // entry point for the application
-// route based on path/headers/query params
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // Default implementation forwards requests to the container
-    // This will automatically renew the activity timeout
     const url = new URL(request.url);
 
     // route request to the backend container
@@ -69,7 +59,6 @@ export default {
 
     // route request to the kv namespace
     if (url.pathname === "/kv") {
-      // Fetch a value from KV
       const value = await env.MY_KV.get("demo-key");
       return new Response(JSON.stringify({ key: "demo-key", value }), {
         status: 200,
@@ -115,6 +104,12 @@ export default {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // route request to the service worker
+    if (url.pathname.startsWith("/worker")) {
+      // Forward the request to the bound service worker
+      return env.WORKER_SERVICE.fetch(request);
     }
 
     return new Response("Not Found", { status: 404 });

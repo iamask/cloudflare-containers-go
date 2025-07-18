@@ -67,7 +67,13 @@
 	"ai": {
 		"binding": "AI"
 	},
-  "secrets_store_secrets": [
+	"services": [
+		{
+			"binding": "WORKER_SERVICE",
+			"service": "cloudflare-containers-go-service-worker"
+		}
+	],
+    "secrets_store_secrets": [
     {
       "binding": "SECRET_STORE",
       "store_id": "17b1a325d8084ec087e87dda53cffd6b",
