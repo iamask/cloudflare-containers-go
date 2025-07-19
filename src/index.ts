@@ -36,7 +36,6 @@ export interface Env {
   BACKEND: DurableObjectNamespace<Backend>;
   MY_KV: KVNamespace;
   PUBLIC: R2Bucket;
-  WORKFLOW_SERVICE: Fetcher;
   AI: any;
   SECRET_STORE: SecretsStoreSecret;
   WORKER_SERVICE: Fetcher;

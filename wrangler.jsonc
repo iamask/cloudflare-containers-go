@@ -48,9 +48,6 @@
 			"id": "c2a03de4a9a54947bf56011ffb64a4d1"
 		}
 	],
-	"images": {
-		"binding": "IMAGES"
-	},
 	"r2_buckets": [
 		{
 			"binding": "PUBLIC",
