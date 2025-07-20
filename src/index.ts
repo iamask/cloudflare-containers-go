@@ -43,7 +43,8 @@ export class LinuxCommandContainer extends Container {
   envVars = {
     APP_ENV: "production",
     SEVICE: "express.js-linux",
-    MESSAGE: "Linux Command Container - Start Time: " + new Date().toISOString(),
+    MESSAGE:
+      "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
 
   override onStart(): void {
@@ -61,34 +62,41 @@ export class LinuxCommandContainer extends Container {
   // Method to get last request timestamp
   async getLastRequestTimestamp(): Promise<string | null> {
     if (!this.durableStorage) return null;
-    return (await this.durableStorage.get("lastRequestTimestamp")) as string | null;
+    return (await this.durableStorage.get("lastRequestTimestamp")) as
+      | string
+      | null;
   }
 
   // Override fetch to handle request proxying
   async fetch(request: Request): Promise<Response> {
     // Store current date/time whenever Durable Object proxies request to this container
     await this.storeRequestTimestamp();
-    
+
     // Start the container if not already running
     await this.start();
-    
+
     // Proxy the request to the actual container application
     try {
       // Forward the request to the container's internal port (8081)
+      console.log("[DEBUG] Proxying request to container");
       const containerResponse = await super.fetch(request);
       return containerResponse;
     } catch (error) {
-      console.error('Error proxying to container:', error);
+      console.error("Error proxying to container:", error);
       // Fallback response if container is not available
-      return new Response(JSON.stringify({
-        message: "Linux Command Container executed (fallback)",
-        timestamp: new Date().toISOString(),
-        lastRequestTimestamp: await this.getLastRequestTimestamp(),
-        error: "Container not available"
-      }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({
+          message:
+            "Linux Command Container executed (fallback from Durable Object)",
+          timestamp: new Date().toISOString(),
+          lastRequestTimestamp: await this.getLastRequestTimestamp(),
+          error: "Container not available",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
   }
 
