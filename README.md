@@ -210,20 +210,36 @@ cloudflare-containers-go/
 ├── container_src/         # Go backend source code (net/http API)
 │   ├── main.go            # Main Go application entrypoint
 │   └── go.mod             # Go module manifest
+├── linux_container_src/   # Linux Command Container source code (Node.js/Express)
+│   ├── server.js          # Express.js server for command execution
+│   └── package.json       # Node.js dependencies
 ├── dist/                  # Static frontend assets (HTML/JS)
-│   └── index.html         # Main frontend page
+│   └── index.html         # Enhanced frontend with organized UI sections
 ├── src/
 │   └── index.ts           # Cloudflare Worker entrypoint (TypeScript)
-├── Dockerfile             # Multi-stage build for Go backend container
+├── Dockerfile.go          # Multi-stage build for Go backend container
+├── Dockerfile.linux       # Alpine-based build for Linux Command Container
 ├── wrangler.jsonc         # Cloudflare deployment configuration
 └── README.md              # Project documentation
 ```
 
-- `container_src/`: Go backend, exposes API endpoints for `/api/*`
-- `dist/`: Static frontend, served for non-API routes
-- `src/index.ts`: Worker script, routes requests to containers or static assets
-- `Dockerfile`: Builds and packages the Go backend for Cloudflare Containers
-- `wrangler.jsonc`: Configures deployment, routing, and container settings
+### Directory Details:
+
+- **`container_src/`**: Go backend container, exposes API endpoints for `/api/*`
+- **`linux_container_src/`**: Node.js/Express container for secure Linux command execution via `/run`
+- **`dist/`**: Static frontend with organized UI sections:
+  - 🚀 API Demo Controls
+  - 🖼️ Image Controls  
+  - 🤖 AI Controls
+  - 📋 Response Display
+  - 🐧 Linux Command Executor
+- **`src/index.ts`**: Worker script with intelligent routing:
+  - Routes `/api/*` to Go backend container
+  - Routes `/run` to Linux Command Container
+  - Handles KV, R2, AI, and static asset requests
+- **`Dockerfile.go`**: Builds Go backend for Cloudflare Containers
+- **`Dockerfile.linux`**: Builds Linux command execution environment
+- **`wrangler.jsonc`**: Configures dual container deployment and routing
 
 ---
 
