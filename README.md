@@ -207,6 +207,18 @@ const secretValue = await env.SECRET_STORE.get();
   - Development utilities (`git`, `jq`, `python3`)
   - System monitoring (`htop`, `free -h`, `uname -a`)
 
+### Request Flow for `/run` Endpoint
+
+1. **Request hits `/run`** → Routes to `LinuxCommandContainer` Durable Object
+2. **Stores timestamp** → Records current date/time in Durable Object storage
+3. **Starts container** → Ensures the Docker container is running (`await this.start()`)
+4. **Proxies request** → Forwards the request to your actual container application (Express.js app running on port 8081)
+5. **Returns container response** → The actual response from your container application
+
+- **Timestamp Storage:** Each request automatically stores the current date/time in Durable Object storage as `lastRequestTimestamp`
+- **Auto-scaling:** Container starts on-demand and scales down after inactivity
+- **Fallback Handling:** Returns error response if container is unavailable
+
 **Example Request:**
 ```bash
 curl -X POST https://go.zxc.co.in/run \

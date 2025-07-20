@@ -24,24 +24,72 @@ export class GoBackend extends Container {
   }
 }
 
-// New Linux Command Container
+// Expres Linux Command Container
 export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
   autoscale = true;
 
-  // Use the new Dockerfile for Linux commands
   dockerfile = "Dockerfile.linux";
+
+  // Storage for Durable Object functionality
+  private durableStorage?: DurableObjectStorage;
+
+  // Initialize storage when used as Durable Object
+  initStorage(state: DurableObjectState) {
+    this.durableStorage = state.storage;
+  }
 
   envVars = {
     APP_ENV: "production",
     SEVICE: "express.js-linux",
-    MESSAGE:
-      "Linux Command Container - Start Time: " + new Date().toISOString(),
+    MESSAGE: "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
 
   override onStart(): void {
     console.log("Linux Command Container started!");
+  }
+
+  // Method to store current date/time when Durable Object proxies request to container
+  async storeRequestTimestamp(): Promise<void> {
+    if (this.durableStorage) {
+      const currentDateTime = new Date().toISOString();
+      await this.durableStorage.put("lastRequestTimestamp", currentDateTime);
+    }
+  }
+
+  // Method to get last request timestamp
+  async getLastRequestTimestamp(): Promise<string | null> {
+    if (!this.durableStorage) return null;
+    return (await this.durableStorage.get("lastRequestTimestamp")) as string | null;
+  }
+
+  // Override fetch to handle request proxying
+  async fetch(request: Request): Promise<Response> {
+    // Store current date/time whenever Durable Object proxies request to this container
+    await this.storeRequestTimestamp();
+    
+    // Start the container if not already running
+    await this.start();
+    
+    // Proxy the request to the actual container application
+    try {
+      // Forward the request to the container's internal port (8081)
+      const containerResponse = await super.fetch(request);
+      return containerResponse;
+    } catch (error) {
+      console.error('Error proxying to container:', error);
+      // Fallback response if container is not available
+      return new Response(JSON.stringify({
+        message: "Linux Command Container executed (fallback)",
+        timestamp: new Date().toISOString(),
+        lastRequestTimestamp: await this.getLastRequestTimestamp(),
+        error: "Container not available"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
   }
 
   override onStop() {
