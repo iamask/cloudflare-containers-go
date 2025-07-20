@@ -28,7 +28,7 @@
     <div style="font-size:1.1em; color:#555; margin-bottom:1em;">Built on the Cloudflare Developer Platform</div>
     <!-- API Controls Section -->
     <div style="margin-bottom:1.5em; padding:1em; border:2px solid #e0e0e0; border-radius:8px; max-width:800px; margin-left:auto; margin-right:auto;">
-      <h3 style="margin-top:0; color:#333;">🚀 API Demo Controls</h3>
+      <h3 style="margin-top:0; color:#333;">API Controls</h3>
       <div style="margin-bottom:1em;">
         <button @click="callApi('/api/api1')">JSON</button>
         <button @click="callApi('/api/heavycompute')">Heavy Compute</button>
@@ -40,7 +40,7 @@
     
     <!-- Image Controls Section -->
     <div style="margin-bottom:1.5em; padding:1em; border:2px solid #e0e0e0; border-radius:8px; max-width:800px; margin-left:auto; margin-right:auto;">
-      <h3 style="margin-top:0; color:#333;">🖼️ Image Controls</h3>
+      <h3 style="margin-top:0; color:#333;">Image Controls</h3>
       <div style="margin-bottom:1em;">
         <label style="margin-right:8px; color:#666;">Dimensions:</label>
         <input type="number" x-model.number="imgWidth" min="1" style="width:60px; margin-right:4px; padding:4px; border:1px solid #ccc; border-radius:3px;" placeholder="Width" @input="imageUrl = null" />
@@ -52,7 +52,7 @@
     
     <!-- AI Controls Section -->
     <div style="margin-bottom:2em; padding:1em; border:2px solid #e0e0e0; border-radius:8px; max-width:800px; margin-left:auto; margin-right:auto;">
-      <h3 style="margin-top:0; color:#333;">🤖 AI Controls</h3>
+      <h3 style="margin-top:0; color:#333;">AI Controls</h3>
       <div style="margin-bottom:1em;">
         <input x-model="aiPrompt" placeholder="Enter your AI prompt here..." style="width:70%; padding:8px; border:1px solid #ccc; border-radius:4px; margin-right:8px;" @keyup.enter="callAi()" />
         <button @click="callAi()" style="padding:8px 16px; background:#ff9800; color:white; border:none; border-radius:4px; cursor:pointer;">Ask AI</button>
@@ -65,14 +65,14 @@
       <span x-show="apiError" x-text="apiError" style="color:red;"></span>
       <template x-if="apiResult">
         <div style="max-width:800px; margin-left:auto; margin-right:auto;">
-          <h4 style="color:#333; margin-bottom:0.5em;">📋 API Response:</h4>
+          <h4 style="color:#333; margin-bottom:0.5em;">API Response:</h4>
           <pre x-text="JSON.stringify(apiResult, null, 2)"></pre>
           <div style="margin-top:0.5em; color:#666;">Latency: <span x-text="latency"></span> ms</div>
         </div>
       </template>
       <template x-if="imageUrl">
         <div style="max-width:800px; margin-left:auto; margin-right:auto;">
-          <h4 style="color:#333; margin-bottom:0.5em;">🖼️ Image Response:</h4>
+          <h4 style="color:#333; margin-bottom:0.5em;">Image Response:</h4>
           <img :src="imageUrl" :width="imgWidth" :height="imgHeight" style="margin-top:1em; border:1px solid #ddd; border-radius:4px;" />
           <div style="margin-top:0.5em; color:#666;">Latency: <span x-text="latency"></span> ms</div>
         </div>
@@ -81,7 +81,7 @@
     
     <!-- Linux Command Interface -->
     <div style="margin-bottom:2em; padding:1em; border:2px solid #e0e0e0; border-radius:8px; max-width:800px; margin-left:auto; margin-right:auto;">
-      <h3 style="margin-top:0; color:#333;">🐧 Linux Command Executor</h3>
+      <h3 style="margin-top:0; color:#333;">Linux Command Executor</h3>
       <div style="margin-bottom:1em;">
         <input 
           x-model="linuxCommand" 
@@ -120,7 +120,7 @@
           
           <template x-if="commandResult.output">
             <div>
-              <div style="font-weight:bold; color:#2d5016; margin-bottom:4px;">📤 Output:</div>
+              <div style="font-weight:bold; color:#2d5016; margin-bottom:4px;">Output:</div>
               <pre style="background:#f8fff8; border-left:4px solid #4caf50; margin:0; font-size:0.9em;" x-text="commandResult.output"></pre>
             </div>
           </template>

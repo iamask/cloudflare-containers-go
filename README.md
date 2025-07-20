@@ -6,19 +6,21 @@ Use your favourite IDE > run `wrangler deploy` > Application is instantly deploy
 
 ---
 
-This project demonstrates a modern full stack application built entirely on Cloudflare's platform:
+This project demonstrates a modern full stack application built entirely on Cloudflare's platform with an optimized dual-container architecture:
 
-- **Frontend:** Served on the Workers framework ([Any favourite framework](https://developers.cloudflare.com/workers/framework-guides/))
-- **Routing:** All requests are routed via a TypeScript Worker ([or Hono for ease of use](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/hono/))
-- **Backend:** Go services running in Cloudflare Containers (handles heavy compute)
-- **Database:** Cloudflare KV and Durable Objects
-- **Storage:** Cloudflare R2 (object storage)
-- **AI:** Cloudflare Workers AI for inference
-- **Image Optimization:** Cloudflare Images (resizing, format conversion)
-- **Secrets Management:** Cloudflare Secrets Store (configured but not actively used in current endpoints)
-- **Service Bindings:** Worker-to-Worker communication via service bindings
+- **Frontend:** Clean, organized UI served via Workers framework with separate sections for API, Image, AI, and Linux command controls
+- **Routing:** Intelligent TypeScript Worker with streamlined routing logic
+- **Dual Container Backend:**
+  - **Go Container** (`GoBackend`): Handles API endpoints (`/api/*`) for JSON responses, heavy compute, and request headers
+  - **Linux Container** (`LinuxCommandContainer`): Secure command execution environment (`/run`) with Express.js
+- **Database:** Cloudflare KV and Durable Objects for persistent storage
+- **Storage:** Cloudflare R2 with integrated image optimization
+- **AI:** Cloudflare Workers AI for LLM inference
+- **Image Processing:** Cloudflare Images with dynamic resizing
+- **Security:** Secrets Store integration and sandboxed command execution
+- **Service Bindings:** Worker-to-Worker communication for microservices architecture
 
-The architecture showcases how to combine edge compute, serverless storage, image optimization, and AI to build scalable, performant applications with minimal infrastructure management.
+The architecture showcases how to combine edge compute, dual container orchestration, serverless storage, AI inference, and secure command execution to build scalable, performant applications with minimal infrastructure management.
 
 ---
 
@@ -229,15 +231,21 @@ curl -X POST https://go.zxc.co.in/run \
 ## Frontend
 
 - **Framework:** Minimal static HTML/JS using [Alpine.js](https://alpinejs.dev/) for reactivity
+- **Architecture:** Clean, organized UI with separate functional sections:
+  - **API Controls** - Core API functionality (JSON, Heavy Compute, KV, Headers, Worker Service)
+  - **Image Controls** - Image processing with dimension inputs and optimization
+  - **AI Controls** - AI prompt interface with enhanced UX
+  - **Response Display** - Centralized area for all API responses
+  - **Linux Command Executor** - Interactive command execution interface
 - **Features:**
-  - API buttons for each endpoint
-  - AI prompt input and response display
-  - Image fetch and display (user-defined width/height, default 100x100)
-  - Latency measurement for each request
-  - Real-time error handling and loading states
-  - JSON output formatting for easy reading
+  - Organized section-based layout for improved user experience
+  - Real-time latency measurement for all requests
+  - Comprehensive error handling and loading states
+  - JSON output formatting with syntax highlighting
+  - Interactive command execution with security validation
+  - Responsive design optimized for demo purposes
 - **Location:** `dist/index.html`
-- **Design:** Just for Demow
+- **Design Philosophy:** Clean, functional interface focused on demonstrating Cloudflare platform capabilities
 
 ---
 
@@ -318,9 +326,24 @@ cloudflare-containers-go/
 
 ---
 
-## Notes for the Demo
+## Architecture Notes
 
-- The Worker acts as a smart gateway, routing API requests to containers and serving static content for all other routes
-- The Go backend uses the standard library for fast, minimal HTTP handling and is built for minimal, containerized deployment
-- The project is ready for Cloudflare's container orchestration, with all ports and entrypoints configured for compatibility
-- The frontend is intentionally minimal and modern, focusing on clarity and usability for demo purposes.
+### **Optimized Design**
+- **Streamlined Worker**: Acts as an intelligent gateway with clean routing logic, optimized by removing unused code
+- **Dual Container Strategy**: 
+  - `GoBackend` container handles traditional API endpoints with Go's standard library for performance
+  - `LinuxCommandContainer` provides secure command execution with Express.js and Alpine Linux
+- **Code Quality**: Recent cleanup removed dead code (unused `Backend` class) for improved maintainability
+- **Security First**: Linux container includes command validation, timeouts, and sandboxed execution
+
+### **Production Ready**
+- All containers configured for Cloudflare's orchestration with proper ports and entrypoints
+- Comprehensive error handling and debugging logs throughout the application
+- Clean, organized frontend with logical UI sections for optimal user experience
+- Full integration with Cloudflare platform services (KV, R2, AI, Images, Secrets)
+
+### **Demo Features**
+- Interactive command execution demonstrating secure containerized environments
+- Real-time latency measurement across all endpoints
+- Comprehensive API testing interface with organized controls
+- Modern, responsive design focused on showcasing Cloudflare platform capabilities

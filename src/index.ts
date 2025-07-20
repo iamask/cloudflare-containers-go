@@ -8,6 +8,7 @@ export class GoBackend extends Container {
 
   envVars = {
     APP_ENV: "production",
+    SEVICE: "go",
     MESSAGE: "GoBackend - Start Time: " + new Date().toISOString(),
   };
 
@@ -23,59 +24,30 @@ export class GoBackend extends Container {
   }
 }
 
-export class Backend extends Container {
-  defaultPort = 8080;
-  // manualStart = true;
-  sleepAfter = "2h";
-  autoscale = true; //unreleased feature
-  //enableInternet = false;
-
-  //custom env variables accssible within the conatiner
-  envVars = {
-    APP_ENV: "production",
-    MESSAGE: "Start Time: " + new Date().toISOString(),
-    // LOG_LEVEL: 'info',
-    // MY_SECRET: env.MY_SECRET,
-  };
-
-  //  Lifecycle method examples
-  override onStart(): void {
-    console.log("Container started! or set Env variables");
-    // Log the dynamic secret passed at runtime
-    // console.log("ACCOUNT_API_KEY:", process.env.ACCOUNT_API_KEY);
-  }
-  override onStop() {
-    console.log("Container successfully shut down");
-  }
-  // Lifecycle method called on errors
-  override onError(error: unknown): any {
-    console.error("Container error:", error);
-    throw error;
-  }
-}
-
 // New Linux Command Container
 export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
   autoscale = true;
-  
+
   // Use the new Dockerfile for Linux commands
   dockerfile = "Dockerfile.linux";
 
   envVars = {
     APP_ENV: "production",
-    MESSAGE: "Linux Command Container - Start Time: " + new Date().toISOString(),
+    SEVICE: "express.js-linux",
+    MESSAGE:
+      "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
 
   override onStart(): void {
     console.log("Linux Command Container started!");
   }
-  
+
   override onStop() {
     console.log("Linux Command Container shut down");
   }
-  
+
   override onError(error: unknown): any {
     console.error("Linux Command Container error:", error);
     throw error;
@@ -112,9 +84,14 @@ export default {
 
     // route request to the Linux command container
     if (url.pathname === "/run") {
-      console.log(`[DEBUG] Matched /run route, attempting to get container instance`);
+      console.log(
+        `[DEBUG] Matched /run route, attempting to get container instance`
+      );
       try {
-        const containerInstance = await getRandom(env.LINUX_COMMAND, INSTANCE_COUNT);
+        const containerInstance = await getRandom(
+          env.LINUX_COMMAND,
+          INSTANCE_COUNT
+        );
         console.log(`[DEBUG] Got container instance, forwarding request`);
         const response = await containerInstance.fetch(request);
         console.log(`[DEBUG] Container response status: ${response.status}`);
