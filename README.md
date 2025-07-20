@@ -184,6 +184,48 @@ const secretValue = await env.SECRET_STORE.get();
 
 ---
 
+## Linux Command Container (Express.js)
+
+- **Framework:** [Express.js](https://expressjs.com/) on [Node.js](https://nodejs.org/)
+- **Base Image:** Alpine Linux with essential system utilities
+- **Endpoints:**
+  - `GET /` (health check - returns service status and timestamp)
+  - `POST /run` (secure command execution - accepts JSON with `command` field)
+- **Port:** Listens on port `8081` (different from Go container)
+- **Security Features:**
+  - Command validation and dangerous command filtering
+  - 30-second execution timeout
+  - Sandboxed execution in `/tmp` directory
+  - Non-root user execution (nodejs:nodejs)
+- **Available Tools:** bash, curl, wget, git, jq, python3, vim, htop, and more
+- **Response Format:** JSON with command output, error messages, exit codes, and execution timestamps
+- **Use Cases:** 
+  - System diagnostics (`ls -la`, `ps aux`, `df -h`)
+  - Network testing (`curl`, `wget`)
+  - Development utilities (`git`, `jq`, `python3`)
+  - System monitoring (`htop`, `free -h`, `uname -a`)
+
+**Example Request:**
+```bash
+curl -X POST https://go.zxc.co.in/run \
+  -H "Content-Type: application/json" \
+  -d '{"command": "ls -la"}'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "command": "ls -la",
+  "output": "total 12\ndrwxrwxrwt 1 root root 4096 Jan 1 12:00 .\n...",
+  "error": "",
+  "exit_code": 0,
+  "timestamp": 1642781234.567
+}
+```
+
+---
+
 ## Frontend
 
 - **Framework:** Minimal static HTML/JS using [Alpine.js](https://alpinejs.dev/) for reactivity
