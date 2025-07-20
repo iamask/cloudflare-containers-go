@@ -38,8 +38,9 @@ func responseHeadersHandler(w http.ResponseWriter, r *http.Request) {
 		"CLOUDFLARE_NODE_ID":       os.Getenv("CLOUDFLARE_NODE_ID"),
 		"CLOUDFLARE_PLACEMENT_ID":  os.Getenv("CLOUDFLARE_PLACEMENT_ID"),
 		"CLOUDFLARE_REGION":        os.Getenv("CLOUDFLARE_REGION"),
-		"MY_CUSTOM_VAR":            os.Getenv("MY_CUSTOM_VAR"),
-		"ANOTHER_VAR":              os.Getenv("ANOTHER_VAR"),
+		"APP_ENV":                  os.Getenv("APP_ENV"),
+		"SEVICE":                   os.Getenv("SEVICE"),
+		"MESSAGE":                  os.Getenv("MESSAGE"),
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{

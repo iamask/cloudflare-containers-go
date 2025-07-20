@@ -22,7 +22,7 @@
 	"containers": [
 		{
 			"class_name": "GoBackend",
-			"image": "./Dockerfile.go",
+			"image": "./Dockerfile.gobackend",
 			"max_instances": 3
 		},
 		{

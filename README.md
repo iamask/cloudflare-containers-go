@@ -300,7 +300,7 @@ cloudflare-containers-go/
 │   └── index.html         # Enhanced frontend with organized UI sections
 ├── src/
 │   └── index.ts           # Cloudflare Worker entrypoint (TypeScript)
-├── Dockerfile.go          # Multi-stage build for Go backend container
+├── Dockerfile.gobackend   # Multi-stage build for Go backend container
 ├── Dockerfile.linux       # Alpine-based build for Linux Command Container
 ├── wrangler.jsonc         # Cloudflare deployment configuration
 └── README.md              # Project documentation
@@ -320,7 +320,7 @@ cloudflare-containers-go/
   - Routes `/api/*` to Go backend container
   - Routes `/run` to Linux Command Container
   - Handles KV, R2, AI, and static asset requests
-- **`Dockerfile.go`**: Builds Go backend for Cloudflare Containers
+- **`Dockerfile.gobackend`**: Builds Go backend for Cloudflare Containers
 - **`Dockerfile.linux`**: Builds Linux command execution environment
 - **`wrangler.jsonc`**: Configures dual container deployment and routing
 
