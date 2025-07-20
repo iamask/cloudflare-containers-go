@@ -2,7 +2,8 @@
 
 *A story of building full-stack apps in 2025 — without losing your mind.*
 
-## Chapter 1: Midnight Spark, Morning Slog
+## Chapter 1: The 2AM Idea That Hit a Wall
+*From excitement to infrastructure overload*
 
 It's 2 AM. You've got an idea — the kind that makes your heart race. You open your laptop, fire up your editor, and get ready to build.
 
@@ -21,7 +22,8 @@ You're no longer thinking about your app — you're thinking about:
 
 **This isn't development. It's digital plumbing.**
 
-## Chapter 2: The Traditional Cloud Gauntlet
+## Chapter 2: The Cloud Setup That Kills Momentum
+*Why shipping on traditional cloud takes weeks*
 
 Let's take a painful walk down memory lane — the "easy" path of deploying an app on a traditional cloud.
 
@@ -42,7 +44,8 @@ Set up CloudWatch. Get paged by false alarms. Sift through logs. Add tracing. Qu
 **By now, you've provisioned 200+ AWS resources.**  
 **Your app idea? Buried under layers of cloud bureaucracy.**
 
-## Chapter 3: The Cloudflare Plot Twist
+## Chapter 3: The One-Command Fix
+*How Cloudflare changes the game*
 
 What if… none of that was necessary?
 
@@ -58,7 +61,8 @@ Here's a better timeline:
 
 **No servers. No subnets. No SSL. No waiting.**
 
-## Chapter 4: The Demo — It's Real
+## Chapter 4: What We Built in One Afternoon
+*A real-world app without the chaos*
 
 What we built in a single afternoon:
 
@@ -87,7 +91,8 @@ npx wrangler deploy
 ✅ Global deployment in seconds  
 ✅ Zero configuration
 
-## Chapter 5: The Developer Toolkit
+## Chapter 5: The Tools You Actually Get
+*All the power — none of the pain*
 
 What you get out-of-the-box with Cloudflare's Developer Platform:
 
@@ -112,7 +117,8 @@ What you get out-of-the-box with Cloudflare's Developer Platform:
 - LLMs + Diffusion models via Workers AI
 - Real-time image resizing, optimization, and streaming
 
-## Chapter 6: The Transformation
+## Chapter 6: How Dev Life Actually Changes
+*From 4-week grind to 4-hour flow*
 
 ### The Old Way:
 *"I'm spending more time configuring infra than building my product."*
@@ -136,7 +142,8 @@ What you get out-of-the-box with Cloudflare's Developer Platform:
 | Hour 4 | `npx wrangler deploy` |
 | Hour 5 | Celebrate with coffee ☕ |
 
-## Chapter 7: The Live Demo Moment
+## Chapter 7: The "Does It Work?" Moment
+*Yes. It's deployed. Globally.*
 
 Every dev's favorite question:  
 **"But does it actually work?"**
@@ -160,7 +167,8 @@ npx wrangler deploy
 ✅ No DevOps tickets required
 ```
 
-## Chapter 8: The Revelation
+## Chapter 8: What We've Been Doing Wrong
+*And how Cloudflare brings the focus back to dev*
 
 **The cloud was supposed to liberate developers.**  
 **Instead, it turned us into sysadmins.**
@@ -175,7 +183,8 @@ Cloudflare flips the script:
 **Your app doesn't run "in us-east-1."**  
 **It runs everywhere — with no region config, ever.**
 
-## Chapter 9: Your Turn
+## Chapter 9: Ready to Build, Not Babysit?
+*Your 60-second launch plan*
 
 You didn't become a developer to babysit infrastructure.
 
