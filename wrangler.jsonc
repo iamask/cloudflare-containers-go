@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "cloudflare-containers-go",
+	"name": "cloudflare-containers-demo",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-06-23",
 	"compatibility_flags": [
@@ -21,26 +21,36 @@
 	},
 	"containers": [
 		{
-			"class_name": "Backend",
-			"image": "./Dockerfile",
+			"class_name": "GoBackend",
+			"image": "./Dockerfile.go",
 			"max_instances": 3
+		},
+		{
+			"class_name": "LinuxCommandContainer",
+			"image": "./Dockerfile.linux",
+			"max_instances": 2
 		}
 	],
 	//https://developers.cloudflare.com/durable-objects/get-started/#4-configure-durable-object-bindings
 	"durable_objects": {
 		"bindings": [
 			{
-				"class_name": "Backend",
+				"class_name": "GoBackend",
 				"name": "BACKEND"
+			},
+			{
+				"class_name": "LinuxCommandContainer",
+				"name": "LINUX_COMMAND"
 			}
 		]
 	},
 	"migrations": [
 		{
+			"tag": "v1",
 			"new_sqlite_classes": [
-				"Backend"
-			],
-			"tag": "v1"
+				"GoBackend",
+				"LinuxCommandContainer"
+			]
 		}
 	],
 	"kv_namespaces": [

@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+
+# Linux command execution container
+FROM alpine:latest
+
+# Install common utilities and tools
+RUN apk add --no-cache \
+    bash \
+    curl \
+    wget \
+    git \
+    jq \
+    python3 \
+    py3-pip \
+    nodejs \
+    npm \
+    vim \
+    nano \
+    htop \
+    procps \
+    net-tools \
+    iputils \
+    bind-tools \
+    openssh-client \
+    rsync \
+    tar \
+    gzip \
+    unzip \
+    ca-certificates
+
+# Create a working directory
+WORKDIR /app
+
+# Copy the Linux command server
+COPY linux_container_src/ ./
+
+# Install Node.js dependencies
+RUN npm install
+
+# Create a non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership of the app directory
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Expose port 8081 (different from Go container)
+EXPOSE 8081
+
+# Run the Express.js server
+CMD ["node", "server.js"]

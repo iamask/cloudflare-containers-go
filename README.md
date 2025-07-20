@@ -28,6 +28,7 @@ The architecture showcases how to combine edge compute, serverless storage, imag
 graph LR;
     USER["User"] --> HTTP["HTTP request"] --> A["Entrypoint worker cloudflare-containers-go"]
     A -- "/api/*" --> BACKEND["Go Backend Container"]
+    A -- "/run" --> LINUX["Linux Command Container"]
     A -- "/ai" --> AI["Workers AI"]
     A -- "/kv" --> KV["KV Namespace"]
     A -- "/image ()" --> R2["R2 Bucket"]
@@ -43,6 +44,7 @@ graph LR;
 | Endpoint Pattern      | Cloudflare Resource        | Description                                                                    |
 | --------------------- | -------------------------- | ------------------------------------------------------------------------------ |
 | `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                                |
+| `/run`                | Durable Object (Container) | Linux command execution container (GET for health, POST for commands)         |
 | `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                                               |
 | `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 (user-defined width/height, default 100x100) |
 | `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
@@ -58,6 +60,7 @@ graph LR;
 - **Entrypoint:** `src/index.ts` (TypeScript)
 - **Routing logic:**
   - Requests to `/api/*` are proxied to backend containers (Go services) using Cloudflare's container orchestration.
+  - Requests to `/run` are proxied to Linux Command Container for secure command execution.
   - `/kv` fetches from Cloudflare KV.
   - `/image` fetches and resizes an image from R2 using Cloudflare Images (`cf: { image: ... }`).
   - `/ai` runs inference using Workers AI (prompt customizable via query param).
@@ -70,6 +73,8 @@ graph LR;
 - `GET /api/api1` → Routed to a Go container instance
 - `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
 - `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
+- `GET /run` → Health check for Linux Command Container
+- `POST /run` → Execute Linux commands securely (requires JSON body with `command` field)
 - `GET /kv` → Returns a value from Cloudflare KV storage
 - `GET /image?width=120&height=80` → Fetches and resizes an image from R2 to 120x80 (defaults to 100x100 if not specified)
 - `GET /ai?prompt=...` → Runs inference using Workers AI with a custom prompt

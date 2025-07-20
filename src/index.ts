@@ -1,5 +1,28 @@
 import { Container, getRandom } from "@cloudflare/containers";
 
+// Temporary GoBackend class for migration purposes
+export class GoBackend extends Container {
+  defaultPort = 8080;
+  sleepAfter = "2h";
+  autoscale = true;
+
+  envVars = {
+    APP_ENV: "production",
+    MESSAGE: "GoBackend - Start Time: " + new Date().toISOString(),
+  };
+
+  override onStart(): void {
+    console.log("GoBackend Container started!");
+  }
+  override onStop() {
+    console.log("GoBackend Container successfully shut down");
+  }
+  override onError(error: unknown): any {
+    console.error("GoBackend Container error:", error);
+    throw error;
+  }
+}
+
 export class Backend extends Container {
   defaultPort = 8080;
   // manualStart = true;
@@ -31,9 +54,38 @@ export class Backend extends Container {
   }
 }
 
+// New Linux Command Container
+export class LinuxCommandContainer extends Container {
+  defaultPort = 8081;
+  sleepAfter = "2h";
+  autoscale = true;
+  
+  // Use the new Dockerfile for Linux commands
+  dockerfile = "Dockerfile.linux";
+
+  envVars = {
+    APP_ENV: "production",
+    MESSAGE: "Linux Command Container - Start Time: " + new Date().toISOString(),
+  };
+
+  override onStart(): void {
+    console.log("Linux Command Container started!");
+  }
+  
+  override onStop() {
+    console.log("Linux Command Container shut down");
+  }
+  
+  override onError(error: unknown): any {
+    console.error("Linux Command Container error:", error);
+    throw error;
+  }
+}
+
 // Bindings for the application
 export interface Env {
-  BACKEND: DurableObjectNamespace<Backend>;
+  BACKEND: DurableObjectNamespace<GoBackend>;
+  LINUX_COMMAND: DurableObjectNamespace<LinuxCommandContainer>;
   MY_KV: KVNamespace;
   PUBLIC: R2Bucket;
   AI: any;
@@ -47,6 +99,8 @@ const INSTANCE_COUNT = 2;
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    console.log(`[DEBUG] Incoming request: ${request.method} ${url.pathname}`);
+    console.log(`[DEBUG] Full URL: ${url.href}`);
 
     // route request to the backend container
     if (url.pathname.startsWith("/api")) {
@@ -54,6 +108,21 @@ export default {
       // this is a temporary helper
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
       return containerInstance.fetch(request);
+    }
+
+    // route request to the Linux command container
+    if (url.pathname === "/run") {
+      console.log(`[DEBUG] Matched /run route, attempting to get container instance`);
+      try {
+        const containerInstance = await getRandom(env.LINUX_COMMAND, INSTANCE_COUNT);
+        console.log(`[DEBUG] Got container instance, forwarding request`);
+        const response = await containerInstance.fetch(request);
+        console.log(`[DEBUG] Container response status: ${response.status}`);
+        return response;
+      } catch (error) {
+        console.error(`[ERROR] Failed to handle /run request:`, error);
+        return new Response(`Container error: ${error}`, { status: 500 });
+      }
     }
 
     // route request to the kv namespace
@@ -111,6 +180,7 @@ export default {
       return env.WORKER_SERVICE.fetch(request);
     }
 
+    console.log(`[DEBUG] No route matched for ${url.pathname}, returning 404`);
     return new Response("Not Found", { status: 404 });
   },
 };
