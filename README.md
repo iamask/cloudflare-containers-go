@@ -84,38 +84,71 @@ graph LR;
 
 ## Service Bindings Configuration
 
-The application uses Cloudflare Service Bindings for Worker-to-Worker communication:
+The application uses comprehensive Cloudflare service bindings to integrate with various platform services:
 
-- **Binding:** `WORKER_SERVICE` (defined in `wrangler.jsonc`)
-- **Target Service:** `cloudflare-containers-go-service-worker`
-- **Route Pattern:** `/worker/*`
-- **Purpose:** Enables direct communication between workers without going through the public internet
+### **Container Bindings (Durable Objects)**
+- **`BACKEND`** → `GoBackend` container (Go API services)
+  - **Route:** `/api/*`
+  - **Max Instances:** 3
+  - **Purpose:** Handles JSON, heavy compute, and request header endpoints
 
-**Benefits:**
+- **`LINUX_COMMAND`** → `LinuxCommandContainer` (Node.js/Express)
+  - **Route:** `/run`
+  - **Max Instances:** 2
+  - **Purpose:** Secure Linux command execution environment
 
-- Zero-latency communication between workers
-- No external HTTP requests
-- Automatic authentication and authorization
-- Type-safe RPC calls (when using RPC-style service bindings)
+### **Storage Bindings**
+- **`MY_KV`** → KV Namespace
+  - **Route:** `/kv`
+  - **ID:** `c2a03de4a9a54947bf56011ffb64a4d1`
+  - **Purpose:** Key-value storage for demo data
 
-**Usage Example:**
+- **`PUBLIC`** → R2 Bucket
+  - **Route:** `/image`
+  - **Bucket:** `public`
+  - **Purpose:** Object storage with image optimization
 
-```typescript
-// Forward requests to the bound service
-if (url.pathname.startsWith("/worker")) {
-  return env.WORKER_SERVICE.fetch(request);
-}
-```
+### **AI & Compute Bindings**
+- **`AI`** → Workers AI
+  - **Route:** `/ai`
+  - **Purpose:** LLM inference using Cloudflare's AI models
 
-**Configuration in `wrangler.jsonc`:**
+### **Worker-to-Worker Communication**
+- **`WORKER_SERVICE`** → Service Binding
+  - **Route:** `/worker/*`
+  - **Target:** `cloudflare-containers-go-service-worker`
+  - **Purpose:** Zero-latency inter-worker communication
+
+### **Security Bindings**
+- **`SECRET_STORE`** → Secrets Store
+  - **Store ID:** `17b1a325d8084ec087e87dda53cffd6b`
+  - **Secret:** `ACCOUNT_API_KEY`
+  - **Purpose:** Secure secret management (configured but not actively used)
+
+### **Configuration in `wrangler.jsonc`:**
 
 ```jsonc
-"services": [
-  {
-    "binding": "WORKER_SERVICE",
-    "service": "cloudflare-containers-go-service-worker"
-  }
-]
+{
+  "durable_objects": {
+    "bindings": [
+      { "class_name": "GoBackend", "name": "BACKEND" },
+      { "class_name": "LinuxCommandContainer", "name": "LINUX_COMMAND" }
+    ]
+  },
+  "kv_namespaces": [
+    { "binding": "MY_KV", "id": "c2a03de4a9a54947bf56011ffb64a4d1" }
+  ],
+  "r2_buckets": [
+    { "binding": "PUBLIC", "bucket_name": "public" }
+  ],
+  "ai": { "binding": "AI" },
+  "services": [
+    { "binding": "WORKER_SERVICE", "service": "cloudflare-containers-go-service-worker" }
+  ],
+  "secrets_store_secrets": [
+    { "binding": "SECRET_STORE", "store_id": "17b1a325d8084ec087e87dda53cffd6b" }
+  ]
+}
 ```
 
 ---
