@@ -26,6 +26,7 @@
 			"max_instances": 3
 		}
 	],
+	//https://developers.cloudflare.com/durable-objects/get-started/#4-configure-durable-object-bindings
 	"durable_objects": {
 		"bindings": [
 			{
