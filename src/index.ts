@@ -1,4 +1,5 @@
 import { Container, getRandom } from "@cloudflare/containers";
+import { request } from "http";
 
 // Temporary GoBackend class for migration purposes
 export class GoBackend extends Container {
@@ -35,8 +36,10 @@ export class LinuxCommandContainer extends Container {
   // Storage for Durable Object functionality
   private durableStorage?: DurableObjectStorage;
 
-  // Initialize storage when used as Durable Object
-  initStorage(state: DurableObjectState) {
+  // Initialize storage in the constructor
+  constructor(state: DurableObjectState, env: Env) {
+    console.log("[DEBUG] DO initialized");
+    super(state, env); // Call the parent class constructor with required arguments
     this.durableStorage = state.storage;
   }
 
@@ -54,8 +57,14 @@ export class LinuxCommandContainer extends Container {
   // Method to store current date/time when Durable Object proxies request to container
   async storeRequestTimestamp(): Promise<void> {
     if (this.durableStorage) {
-      const currentDateTime = new Date().toISOString();
-      await this.durableStorage.put("lastRequestTimestamp", currentDateTime);
+      try {
+        const currentDateTime = new Date().toISOString();
+        await this.durableStorage.put("lastRequestTimestamp", currentDateTime);
+        console.log("[DEBUG] Timestamp stored successfully");
+      } catch (error) {
+        console.error("[ERROR] Failed to store timestamp:", error);
+        // Don't throw - storage failure shouldn't break request processing
+      }
     }
   }
 
@@ -86,8 +95,7 @@ export class LinuxCommandContainer extends Container {
       // Fallback response if container is not available
       return new Response(
         JSON.stringify({
-          message:
-            "Linux Command Container executed (fallback from Durable Object)",
+          message: "Fallback error from Durable Object",
           timestamp: new Date().toISOString(),
           lastRequestTimestamp: await this.getLastRequestTimestamp(),
           error: "Container not available",
@@ -132,34 +140,36 @@ export default {
 
     // route request to the backend container
     if (url.pathname.startsWith("/api")) {
+      console.log(
+        `[DEBUG] Matched /api route, attempting to get Go backend container instance`
+      );
       // note: "getRandom" to be replaced with latency-aware routing in the near future
       // this is a temporary helper
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
-      return containerInstance.fetch(request);
+      const response = await containerInstance.fetch(request);
+      return response;
     }
 
     // route request to the Linux command container
     if (url.pathname === "/run") {
       console.log(
-        `[DEBUG] Matched /run route, attempting to get container instance`
+        `[DEBUG] Matched /run route, attempting to get Linux command container instance`
       );
-      try {
-        const containerInstance = await getRandom(
-          env.LINUX_COMMAND,
-          INSTANCE_COUNT
-        );
-        console.log(`[DEBUG] Got container instance, forwarding request`);
-        const response = await containerInstance.fetch(request);
-        console.log(`[DEBUG] Container response status: ${response.status}`);
-        return response;
-      } catch (error) {
-        console.error(`[ERROR] Failed to handle /run request:`, error);
-        return new Response(`Container error: ${error}`, { status: 500 });
-      }
+      const containerInstance = await getRandom(
+        env.LINUX_COMMAND,
+        INSTANCE_COUNT
+      );
+      console.log(
+        `[DEBUG] Got Linux command container instance, forwarding request`
+      );
+      const response = await containerInstance.fetch(request);
+      console.log(`[DEBUG] Container response status: ${response.status}`);
+      return response;
     }
 
     // route request to the kv namespace
     if (url.pathname === "/kv") {
+      console.log(`[DEBUG] Matched /kv route, attempting to get value`);
       const value = await env.MY_KV.get("demo-key");
       return new Response(JSON.stringify({ key: "demo-key", value }), {
         status: 200,
@@ -195,6 +205,7 @@ export default {
 
     // route request to the workers ai service
     if (url.pathname === "/ai") {
+      console.log(`[DEBUG] Matched /ai route, attempting to get AI response`);
       const prompt =
         url.searchParams.get("prompt") ||
         "What is the origin of the phrase Hello, World?";
@@ -209,6 +220,9 @@ export default {
 
     // route request to the service worker
     if (url.pathname.startsWith("/worker")) {
+      console.log(
+        `[DEBUG] Matched /worker route, forwarding request to service worker`
+      );
       // Forward the request to the bound service worker
       return env.WORKER_SERVICE.fetch(request);
     }
