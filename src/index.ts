@@ -76,7 +76,7 @@ export class LinuxCommandContainer extends Container {
       | null;
   }
 
-  // Override fetch to handle request proxying
+  // Override DO proxy fetch method
   async fetch(request: Request): Promise<Response> {
     // Store current date/time whenever Durable Object proxies request to this container
     await this.storeRequestTimestamp();
@@ -85,19 +85,19 @@ export class LinuxCommandContainer extends Container {
     await this.start();
 
     // Proxy the request to the actual container application
+    // State can be accessed from Storage API and passed to container
     try {
-      // Forward the request to the container's internal port (8081)
+      // Forward the request to the container
       console.log("[DEBUG] Proxying request to container");
       const containerResponse = await super.fetch(request);
       return containerResponse;
     } catch (error) {
       console.error("Error proxying to container:", error);
-      // Fallback response if container is not available
+      // Fallback response if container fails
       return new Response(
         JSON.stringify({
-          message: "Fallback error from Durable Object",
+          message: `Fallback error from Durable Object ; Last request timestamp: ${await this.getLastRequestTimestamp()}`,
           timestamp: new Date().toISOString(),
-          lastRequestTimestamp: await this.getLastRequestTimestamp(),
           error: "Container not available",
         }),
         {
