@@ -23,7 +23,7 @@
 		{
 			"class_name": "GoBackend",
 			"image": "./Dockerfile.gobackend",
-			"max_instances": 3
+			"max_instances": 2
 		},
 		{
 			"class_name": "LinuxCommandContainer",

@@ -33,14 +33,14 @@ export class LinuxCommandContainer extends Container {
 
   dockerfile = "Dockerfile.linux";
 
-  // Storage for Durable Object functionality
-  private durableStorage?: DurableObjectStorage;
+  // Durable Object context (standard pattern)
+  ctx: DurableObjectState;
 
-  // Initialize storage in the constructor
-  constructor(state: DurableObjectState, env: Env) {
+  // Initialize storage in the constructor following Cloudflare pattern
+  constructor(ctx: DurableObjectState, env: Env) {
     console.log("[DEBUG] DO initialized");
-    super(state, env); // Call the parent class constructor with required arguments
-    this.durableStorage = state.storage;
+    super(ctx, env); // Call the parent class constructor with required arguments
+    this.ctx = ctx; // Store context for accessing this.ctx.storage
   }
 
   envVars = {
@@ -56,22 +56,21 @@ export class LinuxCommandContainer extends Container {
 
   // Method to store current date/time when Durable Object proxies request to container
   async storeRequestTimestamp(): Promise<void> {
-    if (this.durableStorage) {
+    if (this.ctx?.storage) {
       try {
         const currentDateTime = new Date().toISOString();
-        await this.durableStorage.put("lastRequestTimestamp", currentDateTime);
+        await this.ctx.storage.put("lastRequestTimestamp", currentDateTime);
         console.log("[DEBUG] Timestamp stored successfully");
       } catch (error) {
         console.error("[ERROR] Failed to store timestamp:", error);
-        // Don't throw - storage failure shouldn't break request processing
       }
     }
   }
 
   // Method to get last request timestamp
   async getLastRequestTimestamp(): Promise<string | null> {
-    if (!this.durableStorage) return null;
-    return (await this.durableStorage.get("lastRequestTimestamp")) as
+    if (!this.ctx?.storage) return null;
+    return (await this.ctx.storage.get("lastRequestTimestamp")) as
       | string
       | null;
   }
@@ -87,8 +86,7 @@ export class LinuxCommandContainer extends Container {
     // Proxy the request to the actual container application
     // State can be accessed from Storage API and passed to container
     try {
-      // Forward the request to the container
-      console.log("[DEBUG] Proxying request to container");
+      console.log("[DEBUG] Proxying request to Linux Express.js container");
       const containerResponse = await super.fetch(request);
       return containerResponse;
     } catch (error) {
