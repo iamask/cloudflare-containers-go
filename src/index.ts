@@ -1,5 +1,4 @@
 import { Container, getRandom } from "@cloudflare/containers";
-import { request } from "http";
 
 // Temporary GoBackend class for migration purposes
 export class GoBackend extends Container {
@@ -25,27 +24,25 @@ export class GoBackend extends Container {
   }
 }
 
-// Expres Linux Command Container
+// Express Linux Command Container
 export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
   autoscale = true;
-
   dockerfile = "Dockerfile.linux";
 
   // Durable Object context (standard pattern)
-  ctx: DurableObjectState;
+  ctx: any;
 
-  // Initialize storage in the constructor following Cloudflare pattern
-  constructor(ctx: DurableObjectState, env: Env) {
+  constructor(ctx: any, env: any) {
     console.log("[DEBUG] DO initialized");
-    super(ctx, env); // Call the parent class constructor with required arguments
+    super(ctx, env);
     this.ctx = ctx; // Store context for accessing this.ctx.storage
   }
 
   envVars = {
     APP_ENV: "production",
-    SEVICE: "express.js-linux",
+    SERVICE: "express.js-linux",
     MESSAGE:
       "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
@@ -75,19 +72,21 @@ export class LinuxCommandContainer extends Container {
       | null;
   }
 
-  // Override DO proxy fetch method
+  /**
+   * Process an incoming request and handle container operations
+   */
   async fetch(request: Request): Promise<Response> {
-    // Store current date/time whenever Durable Object proxies request to this container
-    await this.storeRequestTimestamp();
-
-    // Start the container if not already running
-    await this.start();
-
-    // Proxy the request to the actual container application
-    // State can be accessed from Storage API and passed to container
     try {
+      // Store current date/time whenever Durable Object proxies request to this container
+      await this.storeRequestTimestamp();
+
+      // Proxy the request to the container on the default port (8081)
       console.log("[DEBUG] Proxying request to Linux Express.js container");
-      const containerResponse = await super.fetch(request);
+      const containerResponse = await this.containerFetch(
+        request,
+        this.defaultPort
+      );
+      // super.fetch(request); calls parent class fetch method
       console.log(
         "[DEBUG] Container response status: " +
           containerResponse.status +
@@ -97,16 +96,10 @@ export class LinuxCommandContainer extends Container {
       return containerResponse;
     } catch (error) {
       console.error("Error proxying to container:", error);
-      // Fallback response if container fails
       return new Response(
-        JSON.stringify({
-          message: `Fallback error from Durable Object ; Last request timestamp: ${await this.getLastRequestTimestamp()}`,
-          timestamp: new Date().toISOString(),
-          error: "Container not available",
-        }),
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
         {
           status: 500,
-          headers: { "Content-Type": "application/json" },
         }
       );
     }
