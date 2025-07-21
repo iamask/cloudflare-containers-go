@@ -88,6 +88,12 @@ export class LinuxCommandContainer extends Container {
     try {
       console.log("[DEBUG] Proxying request to Linux Express.js container");
       const containerResponse = await super.fetch(request);
+      console.log(
+        "[DEBUG] Container response status: " +
+          containerResponse.status +
+          ", Last request timestamp: " +
+          (await this.getLastRequestTimestamp())
+      );
       return containerResponse;
     } catch (error) {
       console.error("Error proxying to container:", error);
