@@ -98,6 +98,7 @@ The application uses comprehensive Cloudflare service bindings to integrate with
   - **Route:** `/run`
   - **Max Instances:** 2
   - **Purpose:** Secure Linux command execution environment
+  - **Recent Updates:** Refactored to use `containerFetch` for explicit port targeting (8081) and improved error handling
 
 ### **Storage Bindings**
 - **`MY_KV`** → KV Namespace
