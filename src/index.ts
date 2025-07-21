@@ -32,9 +32,9 @@ export class LinuxCommandContainer extends Container {
   dockerfile = "Dockerfile.linux";
 
   // Durable Object context (standard pattern)
-  ctx: any;
+  ctx: DurableObjectState;
 
-  constructor(ctx: any, env: any) {
+  constructor(ctx: DurableObjectState, env: any) {
     console.log("[DEBUG] DO initialized");
     super(ctx, env);
     this.ctx = ctx; // Store context for accessing this.ctx.storage
