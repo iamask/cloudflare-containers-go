@@ -1,5 +1,15 @@
 import { Container, getRandom } from "@cloudflare/containers";
 
+// Bindings for the application
+export interface Env {
+  BACKEND: DurableObjectNamespace<GoBackend>;
+  LINUX_COMMAND: DurableObjectNamespace<LinuxCommandContainer>;
+  MY_KV: KVNamespace;
+  PUBLIC: R2Bucket;
+  AI: any;
+  SECRET_STORE: SecretsStoreSecret;
+  WORKER_SERVICE: Fetcher;
+}
 //  GoBackend class for API
 export class GoBackend extends Container {
   defaultPort = 8080;
@@ -115,17 +125,6 @@ export class LinuxCommandContainer extends Container {
   }
 }
 
-// Bindings for the application
-export interface Env {
-  BACKEND: DurableObjectNamespace<GoBackend>;
-  LINUX_COMMAND: DurableObjectNamespace<LinuxCommandContainer>;
-  MY_KV: KVNamespace;
-  PUBLIC: R2Bucket;
-  AI: any;
-  SECRET_STORE: SecretsStoreSecret;
-  WORKER_SERVICE: Fetcher;
-}
-
 const INSTANCE_COUNT = 2;
 
 // entry point for the application
@@ -135,19 +134,18 @@ export default {
     console.log(`[DEBUG] Incoming request: ${request.method} ${url.pathname}`);
     console.log(`[DEBUG] Full URL: ${url.href}`);
 
-    // route request to the backend container
+    // 1. route request to the backend container
     if (url.pathname.startsWith("/api")) {
       console.log(
         `[DEBUG] Matched /api route, attempting to get Go backend container instance`
       );
-      // note: "getRandom" to be replaced with latency-aware routing in the near future
-      // this is a temporary helper
+      // note: "getRandom" to be replaced with latency-aware routing in the near future ; this is a temporary helper
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
       const response = await containerInstance.fetch(request);
       return response;
     }
 
-    // route request to the Linux command container
+    // 2. route request to the Linux command container
     if (url.pathname === "/run") {
       console.log(
         `[DEBUG] Matched /run route, attempting to get Linux command container instance`
@@ -164,7 +162,7 @@ export default {
       return response;
     }
 
-    // route request to the kv namespace
+    // 3. route request to the kv namespace
     if (url.pathname === "/kv") {
       console.log(`[DEBUG] Matched /kv route, attempting to get value`);
       const value = await env.MY_KV.get("demo-key");
@@ -174,7 +172,7 @@ export default {
       });
     }
 
-    // route request to the r2 bucket and return optimized image
+    // 4. route request to the r2 bucket and return optimized image
     if (url.pathname === "/image") {
       // Fetch image from R2 and resize using fetch(..., { cf: { image: ... } })
       const imageKey = "ai-generated/1746948849155-zjng9a.jpg";
@@ -200,7 +198,7 @@ export default {
       });
     }
 
-    // route request to the workers ai service
+    // 5. route request to the workers ai service
     if (url.pathname === "/ai") {
       console.log(`[DEBUG] Matched /ai route, attempting to get AI response`);
       const prompt =
@@ -215,7 +213,7 @@ export default {
       });
     }
 
-    // route request to the service worker
+    // 6. route request to the service worker
     if (url.pathname.startsWith("/worker")) {
       console.log(
         `[DEBUG] Matched /worker route, forwarding request to service worker`
