@@ -40,7 +40,7 @@ function executeCommand(command) {
         
         exec(command, { 
             timeout,
-            cwd: '/tmp' // Execute in /tmp for safety
+            cwd: '/' // Execute in /tmp for safety
         }, (error, stdout, stderr) => {
             if (error) {
                 if (error.killed && error.signal === 'SIGTERM') {

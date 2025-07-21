@@ -46,7 +46,7 @@ graph LR;
 | Endpoint Pattern      | Cloudflare Resource        | Description                                                                    |
 | --------------------- | -------------------------- | ------------------------------------------------------------------------------ |
 | `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                                |
-| `/run`                | Durable Object (Container) | Linux command execution container (GET for health, POST for commands)         |
+| `/run`                | Durable Object (Container) | Linux command execution container (GET for health, POST for commands)          |
 | `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                                               |
 | `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 (user-defined width/height, default 100x100) |
 | `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
@@ -89,7 +89,9 @@ graph LR;
 The application uses comprehensive Cloudflare service bindings to integrate with various platform services:
 
 ### **Container Bindings (Durable Objects)**
+
 - **`BACKEND`** → `GoBackend` container (Go API services)
+
   - **Route:** `/api/*`
   - **Max Instances:** 3
   - **Purpose:** Handles JSON, heavy compute, and request header endpoints
@@ -101,7 +103,9 @@ The application uses comprehensive Cloudflare service bindings to integrate with
   - **Recent Updates:** Refactored to use `containerFetch` for explicit port targeting (8081) and improved error handling
 
 ### **Storage Bindings**
+
 - **`MY_KV`** → KV Namespace
+
   - **Route:** `/kv`
   - **ID:** `c2a03de4a9a54947bf56011ffb64a4d1`
   - **Purpose:** Key-value storage for demo data
@@ -112,17 +116,20 @@ The application uses comprehensive Cloudflare service bindings to integrate with
   - **Purpose:** Object storage with image optimization
 
 ### **AI & Compute Bindings**
+
 - **`AI`** → Workers AI
   - **Route:** `/ai`
   - **Purpose:** LLM inference using Cloudflare's AI models
 
 ### **Worker-to-Worker Communication**
+
 - **`WORKER_SERVICE`** → Service Binding
   - **Route:** `/worker/*`
   - **Target:** `cloudflare-containers-go-service-worker`
   - **Purpose:** Zero-latency inter-worker communication
 
 ### **Security Bindings**
+
 - **`SECRET_STORE`** → Secrets Store
   - **Store ID:** `17b1a325d8084ec087e87dda53cffd6b`
   - **Secret:** `ACCOUNT_API_KEY`
@@ -141,15 +148,19 @@ The application uses comprehensive Cloudflare service bindings to integrate with
   "kv_namespaces": [
     { "binding": "MY_KV", "id": "c2a03de4a9a54947bf56011ffb64a4d1" }
   ],
-  "r2_buckets": [
-    { "binding": "PUBLIC", "bucket_name": "public" }
-  ],
+  "r2_buckets": [{ "binding": "PUBLIC", "bucket_name": "public" }],
   "ai": { "binding": "AI" },
   "services": [
-    { "binding": "WORKER_SERVICE", "service": "cloudflare-containers-go-service-worker" }
+    {
+      "binding": "WORKER_SERVICE",
+      "service": "cloudflare-containers-go-service-worker"
+    }
   ],
   "secrets_store_secrets": [
-    { "binding": "SECRET_STORE", "store_id": "17b1a325d8084ec087e87dda53cffd6b" }
+    {
+      "binding": "SECRET_STORE",
+      "store_id": "17b1a325d8084ec087e87dda53cffd6b"
+    }
   ]
 }
 ```
@@ -202,7 +213,7 @@ const secretValue = await env.SECRET_STORE.get();
   - Non-root user execution (nodejs:nodejs)
 - **Available Tools:** bash, curl, wget, git, jq, python3, vim, htop, and more
 - **Response Format:** JSON with command output, error messages, exit codes, and execution timestamps
-- **Use Cases:** 
+- **Use Cases:**
   - System diagnostics (`ls -la`, `ps aux`, `df -h`)
   - Network testing (`curl`, `wget`)
   - Development utilities (`git`, `jq`, `python3`)
@@ -221,6 +232,7 @@ const secretValue = await env.SECRET_STORE.get();
 - **Fallback Handling:** Returns error response if container is unavailable
 
 **Example Request:**
+
 ```bash
 curl -X POST https://go.zxc.co.in/run \
   -H "Content-Type: application/json" \
@@ -228,6 +240,7 @@ curl -X POST https://go.zxc.co.in/run \
 ```
 
 **Example Response:**
+
 ```json
 {
   "success": true,
@@ -238,39 +251,6 @@ curl -X POST https://go.zxc.co.in/run \
   "timestamp": 1642781234.567
 }
 ```
-
----
-
-## Frontend
-
-- **Framework:** Minimal static HTML/JS using [Alpine.js](https://alpinejs.dev/) for reactivity
-- **Architecture:** Clean, organized UI with separate functional sections:
-  - **API Controls** - Core API functionality (JSON, Heavy Compute, KV, Headers, Worker Service)
-  - **Image Controls** - Image processing with dimension inputs and optimization
-  - **AI Controls** - AI prompt interface with enhanced UX
-  - **Response Display** - Centralized area for all API responses
-  - **Linux Command Executor** - Interactive command execution interface
-- **Features:**
-  - Organized section-based layout for improved user experience
-  - Real-time latency measurement for all requests
-  - Comprehensive error handling and loading states
-  - JSON output formatting with syntax highlighting
-  - Interactive command execution with security validation
-  - Responsive design optimized for demo purposes
-- **Location:** `dist/index.html`
-- **Design Philosophy:** Clean, functional interface focused on demonstrating Cloudflare platform capabilities
-
----
-
-## API Endpoints
-
-| Endpoint               | Method | Description                                                   |
-| ---------------------- | ------ | ------------------------------------------------------------- |
-| `/api/api1`            | GET    | Returns a simple JSON response                                |
-| `/api/heavycompute`    | GET    | Runs a heavy compute (Fibonacci) and returns result           |
-| `/api/responseheaders` | GET    | Returns the incoming request headers as JSON                  |
-| `/kv`                  | GET    | Returns a value from Cloudflare KV storage                    |
-| `/image`               | GET    | Runs inference using Workers AI (prompt via `?prompt=` param) |
 
 ---
 
@@ -325,7 +305,7 @@ cloudflare-containers-go/
 - **`linux_container_src/`**: Node.js/Express container for secure Linux command execution via `/run`
 - **`dist/`**: Static frontend with organized UI sections:
   - 🚀 API Demo Controls
-  - 🖼️ Image Controls  
+  - 🖼️ Image Controls
   - 🤖 AI Controls
   - 📋 Response Display
   - 🐧 Linux Command Executor
@@ -338,25 +318,3 @@ cloudflare-containers-go/
 - **`wrangler.jsonc`**: Configures dual container deployment and routing
 
 ---
-
-## Architecture Notes
-
-### **Optimized Design**
-- **Streamlined Worker**: Acts as an intelligent gateway with clean routing logic, optimized by removing unused code
-- **Dual Container Strategy**: 
-  - `GoBackend` container handles traditional API endpoints with Go's standard library for performance
-  - `LinuxCommandContainer` provides secure command execution with Express.js and Alpine Linux
-- **Code Quality**: Recent cleanup removed dead code (unused `Backend` class) for improved maintainability
-- **Security First**: Linux container includes command validation, timeouts, and sandboxed execution
-
-### **Production Ready**
-- All containers configured for Cloudflare's orchestration with proper ports and entrypoints
-- Comprehensive error handling and debugging logs throughout the application
-- Clean, organized frontend with logical UI sections for optimal user experience
-- Full integration with Cloudflare platform services (KV, R2, AI, Images, Secrets)
-
-### **Demo Features**
-- Interactive command execution demonstrating secure containerized environments
-- Real-time latency measurement across all endpoints
-- Comprehensive API testing interface with organized controls
-- Modern, responsive design focused on showcasing Cloudflare platform capabilities
