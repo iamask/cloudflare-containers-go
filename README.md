@@ -77,24 +77,6 @@ cloudflare-containers-go/
 └── README.md              # Project documentation
 ```
 
-### Directory Details:
-
-- **`container_src/`**: Go backend container, exposes API endpoints for `/api/*`
-- **`linux_container_src/`**: Node.js/Express container for secure Linux command execution via `/run`
-- **`dist/`**: Static frontend with organized UI sections:
-  - 🚀 API Demo Controls
-  - 🖼️ Image Controls
-  - 🤖 AI Controls
-  - 📋 Response Display
-  - 🐧 Linux Command Executor
-- **`src/index.ts`**: Worker script with intelligent routing:
-  - Routes `/api/*` to Go backend container
-  - Routes `/run` to Linux Command Container
-  - Handles KV, R2, AI, and static asset requests
-- **`Dockerfile.gobackend`**: Builds Go backend for Cloudflare Containers
-- **`Dockerfile.linux`**: Builds Linux command execution environment
-- **`wrangler.jsonc`**: Configures dual container deployment and routing
-
 ---
 
 ## How Routing Works (`src/index.ts`)
