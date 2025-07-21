@@ -1,6 +1,6 @@
 import { Container, getRandom } from "@cloudflare/containers";
 
-// Temporary GoBackend class for migration purposes
+//  GoBackend class for API
 export class GoBackend extends Container {
   defaultPort = 8080;
   sleepAfter = "2h";
@@ -31,21 +31,20 @@ export class LinuxCommandContainer extends Container {
   autoscale = true;
   dockerfile = "Dockerfile.linux";
 
-  // Durable Object context (standard pattern)
-  ctx: DurableObjectState;
-
-  constructor(ctx: DurableObjectState, env: any) {
-    console.log("[DEBUG] DO initialized");
-    super(ctx, env);
-    this.ctx = ctx; // Store context for accessing this.ctx.storage
-  }
-
   envVars = {
     APP_ENV: "production",
     SERVICE: "express.js-linux",
     MESSAGE:
       "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
+
+  ctx: DurableObjectState;
+
+  constructor(ctx: DurableObjectState, env: any) {
+    console.log("[DEBUG] DO initialized");
+    super(ctx, env);
+    this.ctx = ctx;
+  }
 
   override onStart(): void {
     console.log("Linux Command Container started!");
@@ -66,10 +65,11 @@ export class LinuxCommandContainer extends Container {
 
   // Method to get last request timestamp
   async getLastRequestTimestamp(): Promise<string | null> {
-    if (!this.ctx?.storage) return null;
-    return (await this.ctx.storage.get("lastRequestTimestamp")) as
-      | string
-      | null;
+    const lastRequestTimestamp = (await this.ctx?.storage?.get(
+      "lastRequestTimestamp"
+    )) as string | null;
+    console.log("[DEBUG] Last request timestamp:", lastRequestTimestamp);
+    return lastRequestTimestamp;
   }
 
   /**
@@ -229,6 +229,7 @@ export default {
   },
 };
 
+//new feature : pass stored data to container
 /*
 // Hono-based implementation 
 const app = new Hono<{ Bindings: Env }>();
