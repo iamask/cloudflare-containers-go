@@ -182,19 +182,18 @@ export default {
 
     // 6. route request to the service worker
     if (url.pathname.startsWith("/worker")) {
-      // Forward the request to the bound service worker
       return env.WORKER_SERVICE.fetch(request);
     }
 
-    // 5. route request to the backend container
+    // 7. route request to the backend container
     if (url.pathname.startsWith("/api")) {
-      // containerInstance.fetch(request) is calling the Durable Object’s own fetch() method
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
+      // containerInstance.fetch(request) is calling the Durable Object’s own fetch() method
       const response = await containerInstance.fetch(request);
       return response;
     }
 
-    // 6. route request to the Linux command container
+    // 8. route request to the Linux command container
     if (url.pathname === "/run") {
       const containerInstance = await getRandom(
         env.LINUX_COMMAND,
