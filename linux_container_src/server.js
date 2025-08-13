@@ -85,7 +85,7 @@ app.post('/run', async (req, res) => {
         if (!command || typeof command !== 'string' || command.trim() === '') {
             return res.json({
                 success: false,
-                error: 'No command provided',
+                error: 'No command provided!',
                 timestamp: Date.now() / 1000
             });
         }

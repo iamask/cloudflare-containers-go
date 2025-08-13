@@ -1,6 +1,5 @@
 import { Container, getRandom } from "@cloudflare/containers";
 
-// Bindings for the application
 export interface Env {
   BACKEND: DurableObjectNamespace<GoBackend>;
   LINUX_COMMAND: DurableObjectNamespace<LinuxCommandContainer>;
@@ -73,7 +72,6 @@ export class LinuxCommandContainer extends Container {
     }
   }
 
-  // Method to get last request timestamp
   async getLastRequestTimestamp(): Promise<string | null> {
     const lastRequestTimestamp = (await this.ctx?.storage?.get(
       "lastRequestTimestamp"
@@ -82,27 +80,17 @@ export class LinuxCommandContainer extends Container {
     return lastRequestTimestamp;
   }
 
-  /**
-   * Process an incoming request and handle container operations
-   */
+  // Override the Durable Object's fetch method to proxy requests to the container's fetch method
   async fetch(request: Request): Promise<Response> {
     try {
-      // Store current date/time whenever Durable Object proxies request to this container
       await this.storeRequestTimestamp();
 
       // Proxy the request to the container on the default port (8081)
-      console.log("[DEBUG] Proxying request to Linux Express.js container");
       const containerResponse = await this.containerFetch(
         request,
         this.defaultPort
       );
-      // super.fetch(request); calls parent class fetch method
-      console.log(
-        "[DEBUG] Container response status: " +
-          containerResponse.status +
-          ", Last request timestamp: " +
-          (await this.getLastRequestTimestamp())
-      );
+
       return containerResponse;
     } catch (error) {
       console.error("Error proxying to container:", error);
@@ -125,46 +113,26 @@ export class LinuxCommandContainer extends Container {
   }
 }
 
-const INSTANCE_COUNT = 2;
+const INSTANCE_COUNT = 3;
 
-// entry point for the application
+// entry point for the application;
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    console.log(`[DEBUG] Incoming request: ${request.method} ${url.pathname}`);
-    console.log(`[DEBUG] Full URL: ${url.href}`);
 
-    // 1. route request to the backend container
-    if (url.pathname.startsWith("/api")) {
-      console.log(
-        `[DEBUG] Matched /api route, attempting to get Go backend container instance`
-      );
-      // note: "getRandom" to be replaced with latency-aware routing in the near future ; this is a temporary helper
-      const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
-      const response = await containerInstance.fetch(request);
-      return response;
+    // 1. Generate response from the worker
+    if (url.pathname === "/test1") {
+      return new Response("Hello, World!", { status: 200 });
     }
 
-    // 2. route request to the Linux command container
-    if (url.pathname === "/run") {
-      console.log(
-        `[DEBUG] Matched /run route, attempting to get Linux command container instance`
-      );
-      const containerInstance = await getRandom(
-        env.LINUX_COMMAND,
-        INSTANCE_COUNT
-      );
-      console.log(
-        `[DEBUG] Got Linux command container instance, forwarding request`
-      );
-      const response = await containerInstance.fetch(request);
-      console.log(`[DEBUG] Container response status: ${response.status}`);
+    // 2. Proxy request to external service
+    if (url.pathname === "/test2") {
+      let response = await fetch("https://httpbin.org/get");
       return response;
     }
 
     // 3. route request to the kv namespace
     if (url.pathname === "/kv") {
-      console.log(`[DEBUG] Matched /kv route, attempting to get value`);
       const value = await env.MY_KV.get("demo-key");
       return new Response(JSON.stringify({ key: "demo-key", value }), {
         status: 200,
@@ -200,11 +168,10 @@ export default {
 
     // 5. route request to the workers ai service
     if (url.pathname === "/ai") {
-      console.log(`[DEBUG] Matched /ai route, attempting to get AI response`);
       const prompt =
         url.searchParams.get("prompt") ||
         "What is the origin of the phrase Hello, World?";
-      const response = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      const response = await env.AI.run("@cf/openai/gpt-oss-120b", {
         prompt,
       });
       return new Response(JSON.stringify(response), {
@@ -215,35 +182,29 @@ export default {
 
     // 6. route request to the service worker
     if (url.pathname.startsWith("/worker")) {
-      console.log(
-        `[DEBUG] Matched /worker route, forwarding request to service worker`
-      );
       // Forward the request to the bound service worker
       return env.WORKER_SERVICE.fetch(request);
     }
 
-    console.log(`[DEBUG] No route matched for ${url.pathname}, returning 404`);
+    // 5. route request to the backend container
+    if (url.pathname.startsWith("/api")) {
+      // containerInstance.fetch(request) is calling the Durable Object’s own fetch() method
+      const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
+      const response = await containerInstance.fetch(request);
+      return response;
+    }
+
+    // 6. route request to the Linux command container
+    if (url.pathname === "/run") {
+      const containerInstance = await getRandom(
+        env.LINUX_COMMAND,
+        INSTANCE_COUNT
+      );
+      const response = await containerInstance.fetch(request);
+      console.log(`[DEBUG] Container response status: ${response.status}`);
+      return response;
+    }
+
     return new Response("Not Found", { status: 404 });
   },
 };
-
-//new feature : pass stored data to container
-/*
-// Hono-based implementation 
-const app = new Hono<{ Bindings: Env }>();
-
-app.all("/api/*", async (c) => {
-  const env = c.env;
-  const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
-  return containerInstance.fetch(c.req.raw);
-});
-
-app.get("/kv", async (c) => {
-  const value = await c.env.MY_KV.get("demo-key");
-  return c.json({ key: "demo-key", value });
-});
-
-app.all("*", (c) => c.text("Not Found", 404));
-
-export default app;
-*/

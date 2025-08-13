@@ -70,7 +70,7 @@ func heavyComputeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/api/api1", apiHandler("From Container!", 101))
+	http.HandleFunc("/api/api1", apiHandler("From Container!!!", 101))
 	http.HandleFunc("/api/heavycompute", heavyComputeHandler)
 	http.HandleFunc("/api/responseheaders", responseHeadersHandler)
 	http.ListenAndServe(":8080", nil)
