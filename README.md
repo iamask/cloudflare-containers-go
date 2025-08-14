@@ -170,22 +170,6 @@ cloudflare-containers-go/
 
 ## Building and Deploying
 
-### Go Backend
-
-- Built using Go modules:
-  - `go build -o /server` (inside the Docker build)
-- **Dockerfile:** Multi-stage build
-  - **Build stage:** Compiles the Go binary in an Alpine environment
-  - **Runtime stage:** Copies the binary into a minimal scratch image
-- **Entrypoint:** Backend binary is `/server` and listens on port 8080
-
-### Static Frontend
-
-- Located in the `dist/` directory
-- Served directly by Cloudflare Workers for non-API routes
-
-### Deployment
-
 - Use [Wrangler](https://developers.cloudflare.com/workers/wrangler/) to deploy:
   - `npx wrangler deploy`
 - Wrangler handles asset upload, Worker deployment, and container image build/push
