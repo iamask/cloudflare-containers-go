@@ -6,22 +6,10 @@ This project demonstrates a modern full-stack application built entirely on Clou
 
 > **"The Network is the Computer"** - Deploy to 300+ cities worldwide with a single command: `wrangler deploy`
 
-## 🚀 Key Features
-
-### Dual Container Architecture
-- **Go Backend Container** (`GoBackend`)
-  - Handles API endpoints at `/api/*`
-  - Provides JSON responses, heavy compute operations, and header inspection
-  - Auto-scaling with load balancing across 3 instances
-  - Internet access enabled for external API calls
-
-- **Linux Command Container** (`LinuxCommandContainer`)
-  - Secure command execution environment at `/run`
-  - Express.js server for handling Linux commands
-  - Persistent storage via Durable Objects
-  - Automatic timestamp tracking for requests
+## Key Features
 
 ### Platform Services Integration
+
 - **Edge Routing:** TypeScript Worker with intelligent request routing
 - **Persistent Storage:** Cloudflare KV and Durable Objects
 - **Object Storage:** R2 bucket with dynamic image optimization
@@ -38,52 +26,60 @@ graph TB
     subgraph "Client"
         USER["👤 User"]
     end
-    
+
     subgraph "Edge Worker"
         WORKER["TypeScript Worker<br/>(src/index.ts)"]
     end
-    
-    subgraph "Containerized Services"
-        GO["Go Backend<br/>3 instances<br/>Port: 8080"]
-        LINUX["Linux Container<br/>Express.js<br/>Port: 8081"]
+
+    subgraph "Durable Objects with Containers"
+        subgraph "GoBackend DO"
+            DO_GO["Durable Object<br/>GoBackend Class"]
+            GO["Go Container<br/>3 instances<br/>Port: 8080"]
+            DO_GO --> GO
+        end
+
+        subgraph "LinuxCommandContainer DO"
+            DO_LINUX["Durable Object<br/>LinuxCommandContainer Class"]
+            LINUX["Linux Container<br/>Express.js<br/>Port: 8081"]
+            DO_LINUX --> LINUX
+            DO_LINUX -.->|Storage| STORAGE["ctx.storage<br/>(timestamps)"]
+        end
     end
-    
+
     subgraph "Cloudflare Services"
         KV["KV Storage"]
         R2["R2 Bucket"]
         AI["Workers AI"]
-        DO["Durable Objects<br/>Storage"]
         SERVICE["Service Worker"]
     end
-    
+
     USER -->|HTTP Request| WORKER
-    WORKER -->|"/api/*"| GO
-    WORKER -->|"/run"| LINUX
+    WORKER -->|"/api/*"| DO_GO
+    WORKER -->|"/run"| DO_LINUX
     WORKER -->|"/kv"| KV
     WORKER -->|"/image"| R2
     WORKER -->|"/ai"| AI
     WORKER -->|"/worker/*"| SERVICE
-    LINUX -->|Persist| DO
 ```
 
 ---
 
 ## 📍 API Endpoints
 
-| Endpoint | Resource | Description |
-|----------|----------|-------------|
-| `/test1` | Worker Direct | Simple "Hello, World!" response |
-| `/test2` | External Fetch | Proxies to httpbin.org with custom headers |
-| `/api/*` | Go Container | Backend API services |
-| `/api/api1` | Go Container | Returns simple JSON response |
-| `/api/heavycompute` | Go Container | Fibonacci computation for load testing |
-| `/api/responseheaders` | Go Container | Echoes request headers as JSON |
-| `/run` | Linux Container | Command execution (GET: health, POST: execute) |
-| `/kv` | KV Namespace | Fetches value for key "demo-key" |
-| `/image` | R2 + Image Transform | Dynamic image resizing (params: width, height) |
-| `/ai` | Workers AI | LLM inference (param: ?prompt=) |
-| `/worker/*` | Service Binding | Routes to service worker |
-| `/` | Static Assets | Frontend UI from /dist |
+| Endpoint               | Resource             | Description                                    |
+| ---------------------- | -------------------- | ---------------------------------------------- |
+| `/test1`               | Worker Direct        | Simple "Hello, World!" response                |
+| `/test2`               | External Fetch       | Proxies to httpbin.org with custom headers     |
+| `/api/*`               | Go Container         | Backend API services                           |
+| `/api/api1`            | Go Container         | Returns simple JSON response                   |
+| `/api/heavycompute`    | Go Container         | Fibonacci computation for load testing         |
+| `/api/responseheaders` | Go Container         | Echoes request headers as JSON                 |
+| `/run`                 | Linux Container      | Command execution (GET: health, POST: execute) |
+| `/kv`                  | KV Namespace         | Fetches value for key "demo-key"               |
+| `/image`               | R2 + Image Transform | Dynamic image resizing (params: width, height) |
+| `/ai`                  | Workers AI           | LLM inference (param: ?prompt=)                |
+| `/worker/*`            | Service Binding      | Routes to service worker                       |
+| `/`                    | Static Assets        | Frontend UI from /dist                         |
 
 ---
 
@@ -115,6 +111,7 @@ cloudflare-containers-go/
 ### Container Classes (`src/index.ts`)
 
 #### GoBackend Class
+
 ```typescript
 - Port: 8080
 - Sleep After: 2 hours
@@ -124,9 +121,10 @@ cloudflare-containers-go/
 ```
 
 #### LinuxCommandContainer Class
+
 ```typescript
 - Port: 8081
-- Sleep After: 2 hours  
+- Sleep After: 2 hours
 - Autoscale: Enabled
 - Features:
   - Automatic request timestamp storage in Durable Objects
@@ -135,7 +133,9 @@ cloudflare-containers-go/
 ```
 
 ### Load Balancing
+
 The application uses `getRandom()` from `@cloudflare/containers` to distribute requests across 3 container instances for the Go backend, ensuring optimal performance and availability.
+
 - `POST /run` → Execute Linux commands securely (requires JSON body with `command` field)
 - `GET /kv` → Returns a value from Cloudflare KV storage
 - `GET /image?width=120&height=80` → Fetches and resizes an image from R2 to 120x80 (defaults to 100x100 if not specified)
@@ -222,93 +222,6 @@ The application uses comprehensive Cloudflare service bindings to integrate with
       "store_id": "17b1a325d8084ec087e87dda53cffd6b"
     }
   ]
-}
-```
-
----
-
-## Secrets Store Configuration
-
-The application is configured with Cloudflare Secrets Store for secure secret management:
-
-- **Binding:** `SECRET_STORE` (defined in `wrangler.jsonc`)
-- **Store ID:** `17b1a325d8084ec087e87dda53cffd6b`
-- **Secret Name:** `ACCOUNT_API_KEY`
-- **Usage:** Currently configured but not actively used by any endpoints
-- **Purpose:** Ready for future implementation of secure API key management or other sensitive data handling
-
-To use the secret in your code:
-
-```typescript
-// In your worker's fetch handler
-const secretValue = await env.SECRET_STORE.get();
-```
-
----
-
-## Go Backend (net/http)
-
-- **Framework:** Standard Go [`net/http`](https://pkg.go.dev/net/http)
-- **Endpoints:**
-  - `/api/api1` (returns a simple JSON response)
-  - `/api/heavycompute` (runs a heavy compute operation and returns the result)
-  - `/api/responseheaders` (returns the incoming request headers as JSON)
-- **Port:** Listens on port `8080` (required by Cloudflare Containers)
-- **Build:** Compiled as a single static binary using Go modules
-
----
-
-## Linux Command Container (Express.js)
-
-- **Framework:** [Express.js](https://expressjs.com/) on [Node.js](https://nodejs.org/)
-- **Base Image:** Alpine Linux with essential system utilities
-- **Endpoints:**
-  - `GET /` (health check - returns service status and timestamp)
-  - `POST /run` (secure command execution - accepts JSON with `command` field)
-- **Port:** Listens on port `8081` (different from Go container)
-- **Security Features:**
-  - Command validation and dangerous command filtering
-  - 30-second execution timeout
-  - Sandboxed execution in `/tmp` directory
-  - Non-root user execution (nodejs:nodejs)
-- **Available Tools:** bash, curl, wget, git, jq, python3, vim, htop, and more
-- **Response Format:** JSON with command output, error messages, exit codes, and execution timestamps
-- **Use Cases:**
-  - System diagnostics (`ls -la`, `ps aux`, `df -h`)
-  - Network testing (`curl`, `wget`)
-  - Development utilities (`git`, `jq`, `python3`)
-  - System monitoring (`htop`, `free -h`, `uname -a`)
-
-### Request Flow for `/run` Endpoint
-
-1. **Request hits `/run`** → Routes to `LinuxCommandContainer` Durable Object
-2. **Stores timestamp** → Records current date/time in Durable Object storage
-3. **Starts container** → Ensures the Docker container is running (`await this.start()`)
-4. **Proxies request** → Forwards the request to your actual container application (Express.js app running on port 8081)
-5. **Returns container response** → The actual response from your container application
-
-- **Timestamp Storage:** Each request automatically stores the current date/time in Durable Object storage as `lastRequestTimestamp`
-- **Auto-scaling:** Container starts on-demand and scales down after inactivity
-- **Fallback Handling:** Returns error response if container is unavailable
-
-**Example Request:**
-
-```bash
-curl -X POST https://go.zxc.co.in/run \
-  -H "Content-Type: application/json" \
-  -d '{"command": "ls -la"}'
-```
-
-**Example Response:**
-
-```json
-{
-  "success": true,
-  "command": "ls -la",
-  "output": "total 12\ndrwxrwxrwt 1 root root 4096 Jan 1 12:00 .\n...",
-  "error": "",
-  "exit_code": 0,
-  "timestamp": 1642781234.567
 }
 ```
 
