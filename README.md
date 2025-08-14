@@ -134,25 +134,7 @@ cloudflare-containers-go/
 
 ---
 
-## Service Bindings Configuration
-
-The application uses comprehensive Cloudflare service bindings to integrate with various platform services:
-
-### **Container Bindings (Durable Objects)**
-
-- **`BACKEND`** → `GoBackend` container (Go API services)
-
-  - **Route:** `/api/*`
-  - **Max Instances:** 3
-  - **Purpose:** Handles JSON, heavy compute, and request header endpoints
-
-- **`LINUX_COMMAND`** → `LinuxCommandContainer` (Node.js/Express)
-  - **Route:** `/run`
-  - **Max Instances:** 2
-  - **Purpose:** Secure Linux command execution environment
-  - **Recent Updates:** Refactored to use `containerFetch` for explicit port targeting (8081) and improved error handling
-
-### ** Bindings**
+## Service Bindings
 
 ### **Configuration in `wrangler.jsonc`:**
 
