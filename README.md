@@ -1,103 +1,141 @@
-## Distributed Full Stack Application on Global Network | [Network is the Computer](https://blog.cloudflare.com/the-network-is-the-computer/)
+# Cloudflare Containers Demo - Full Stack Application
 
-Think of the Cloudflare Network as a single, global computer operating across 300+ cities. When you deploy to Cloudflare, your application is deployed to "Region Earth" - a unified global region. The platform takes care of intelligent routing, seamless scaling, performance optimization, and robust security, all while delivering a world-class developer experience.
+## 🌍 Distributed Computing on Cloudflare's Global Network
 
-Use your favourite IDE > run `wrangler deploy` > Application is instantly deployed to the massive distributed computer
+This project demonstrates a modern full-stack application built entirely on Cloudflare's platform, showcasing the power of edge computing with containerized workloads.
+
+> **"The Network is the Computer"** - Deploy to 300+ cities worldwide with a single command: `wrangler deploy`
+
+## 🚀 Key Features
+
+### Dual Container Architecture
+- **Go Backend Container** (`GoBackend`)
+  - Handles API endpoints at `/api/*`
+  - Provides JSON responses, heavy compute operations, and header inspection
+  - Auto-scaling with load balancing across 3 instances
+  - Internet access enabled for external API calls
+
+- **Linux Command Container** (`LinuxCommandContainer`)
+  - Secure command execution environment at `/run`
+  - Express.js server for handling Linux commands
+  - Persistent storage via Durable Objects
+  - Automatic timestamp tracking for requests
+
+### Platform Services Integration
+- **Edge Routing:** TypeScript Worker with intelligent request routing
+- **Persistent Storage:** Cloudflare KV and Durable Objects
+- **Object Storage:** R2 bucket with dynamic image optimization
+- **AI Inference:** Workers AI for LLM capabilities
+- **Service Bindings:** Worker-to-Worker communication
+- **Security:** Secrets Store integration
 
 ---
 
-This project demonstrates a modern full stack application built entirely on Cloudflare's platform with an optimized dual-container architecture:
-
-- **Frontend:** Clean, organized UI served via Workers framework with separate sections for API, Image, AI, and Linux command controls
-- **Routing:** Intelligent TypeScript Worker with streamlined routing logic
-- **Dual Container Backend:**
-  - **Go Container** (`GoBackend`): Handles API endpoints (`/api/*`) for JSON responses, heavy compute, and request headers
-  - **Linux Container** (`LinuxCommandContainer`): Secure command execution environment (`/run`) with Express.js
-- **Database:** Cloudflare KV and Durable Objects for persistent storage
-- **Storage:** Cloudflare R2 with integrated image optimization
-- **AI:** Cloudflare Workers AI for LLM inference
-- **Image Processing:** Cloudflare Images with dynamic resizing
-- **Security:** Secrets Store integration and sandboxed command execution
-- **Service Bindings:** Worker-to-Worker communication for microservices architecture
-
-The architecture showcases how to combine edge compute, dual container orchestration, serverless storage, AI inference, and secure command execution to build scalable, performant applications with minimal infrastructure management.
-
----
-
-## Architecture Overview
+## 🏗️ Architecture Overview
 
 ```mermaid
-graph LR;
-    USER["User"] --> HTTP["HTTP request"] --> A["Entrypoint worker cloudflare-containers-go"]
-    A -- "/api/*" --> BACKEND["Go Backend Container"]
-    A -- "/run" --> LINUX["Linux Command Container"]
-    A -- "/ai" --> AI["Workers AI"]
-    A -- "/kv" --> KV["KV Namespace"]
-    A -- "/image ()" --> R2["R2 Bucket"]
-    A -- "/image (pristine images)" --> IMAGES["Cloudflare Images"]
-    A -- "/worker/*" --> SERVICE["Service Worker: cloudflare-containers-go-service-worker"]
-    A -- "/ (static)" --> STATIC["Workers Framework /dist"]
+graph TB
+    subgraph "Client"
+        USER["👤 User"]
+    end
+    
+    subgraph "Edge Worker"
+        WORKER["TypeScript Worker<br/>(src/index.ts)"]
+    end
+    
+    subgraph "Containerized Services"
+        GO["Go Backend<br/>3 instances<br/>Port: 8080"]
+        LINUX["Linux Container<br/>Express.js<br/>Port: 8081"]
+    end
+    
+    subgraph "Cloudflare Services"
+        KV["KV Storage"]
+        R2["R2 Bucket"]
+        AI["Workers AI"]
+        DO["Durable Objects<br/>Storage"]
+        SERVICE["Service Worker"]
+    end
+    
+    USER -->|HTTP Request| WORKER
+    WORKER -->|"/api/*"| GO
+    WORKER -->|"/run"| LINUX
+    WORKER -->|"/kv"| KV
+    WORKER -->|"/image"| R2
+    WORKER -->|"/ai"| AI
+    WORKER -->|"/worker/*"| SERVICE
+    LINUX -->|Persist| DO
 ```
 
 ---
 
-## Endpoint to Resource Mapping
+## 📍 API Endpoints
 
-| Endpoint Pattern      | Cloudflare Resource        | Description                                                                    |
-| --------------------- | -------------------------- | ------------------------------------------------------------------------------ |
-| `/api/*`              | Durable Object (Container) | Proxies to Go backend container                                                |
-| `/run`                | Durable Object (Container) | Linux command execution container (GET for health, POST for commands)          |
-| `/kv`                 | KV Namespace               | Fetches value from Cloudflare KV                                               |
-| `/image`              | R2 Bucket + Images         | Fetches and resizes image from R2 (user-defined width/height, default 100x100) |
-| `/ai`                 | Workers AI                 | Runs inference using Workers AI (custom prompt via `?prompt=`)                 |
-| `/worker/*`           | Service Binding            | Routes to bound service worker `cloudflare-containers-go-service-worker`       |
-| `/` (static frontend) | Static Asset               | Served from Worker/dist                                                        |
-
-**Note:** The application also has Cloudflare Secrets Store configured (`SECRET_STORE` binding) for secure secret management, though it's not currently utilized by any active endpoints.
+| Endpoint | Resource | Description |
+|----------|----------|-------------|
+| `/test1` | Worker Direct | Simple "Hello, World!" response |
+| `/test2` | External Fetch | Proxies to httpbin.org with custom headers |
+| `/api/*` | Go Container | Backend API services |
+| `/api/api1` | Go Container | Returns simple JSON response |
+| `/api/heavycompute` | Go Container | Fibonacci computation for load testing |
+| `/api/responseheaders` | Go Container | Echoes request headers as JSON |
+| `/run` | Linux Container | Command execution (GET: health, POST: execute) |
+| `/kv` | KV Namespace | Fetches value for key "demo-key" |
+| `/image` | R2 + Image Transform | Dynamic image resizing (params: width, height) |
+| `/ai` | Workers AI | LLM inference (param: ?prompt=) |
+| `/worker/*` | Service Binding | Routes to service worker |
+| `/` | Static Assets | Frontend UI from /dist |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 cloudflare-containers-go/
-├── container_src/         # Go backend source code (net/http API)
-│   ├── main.go            # Main Go application entrypoint
-│   └── go.mod             # Go module manifest
-├── linux_container_src/   # Linux Command Container source code (Node.js/Express)
-│   ├── server.js          # Express.js server for command execution
-│   └── package.json       # Node.js dependencies
-├── dist/                  # Static frontend assets (HTML/JS)
-│   └── index.html         # Enhanced frontend with organized UI sections
 ├── src/
-│   └── index.ts           # Cloudflare Worker entrypoint (TypeScript)
-├── Dockerfile.gobackend   # Multi-stage build for Go backend container
-├── Dockerfile.linux       # Alpine-based build for Linux Command Container
-├── wrangler.jsonc         # Cloudflare deployment configuration
-└── README.md              # Project documentation
+│   └── index.ts              # Main Worker entry point with routing logic
+├── container_src/            # Go backend container
+│   ├── main.go              # HTTP server with API endpoints
+│   └── go.mod               # Go dependencies
+├── linux_container_src/      # Linux command execution container
+│   ├── server.js            # Express.js server
+│   └── package.json         # Node.js dependencies
+├── dist/                     # Frontend assets
+│   └── index.html           # Interactive UI
+├── Dockerfile               # Go backend container image
+├── Dockerfile.linux         # Linux container image
+├── wrangler.jsonc           # Cloudflare configuration
+├── package.json             # Project dependencies
+└── README.md               # This file
 ```
 
 ---
 
-## How Routing Works (`src/index.ts`)
+## 🔧 Technical Implementation
 
-- **Entrypoint:** `src/index.ts` (TypeScript)
-- **Routing logic:**
-  - Requests to `/api/*` are proxied to backend containers (Go services) using Cloudflare's container orchestration.
-  - Requests to `/run` are proxied to Linux Command Container for secure command execution.
-  - `/kv` fetches from Cloudflare KV.
-  - `/image` fetches and resizes an image from R2 using Cloudflare Images (`cf: { image: ... }`).
-  - `/ai` runs inference using Workers AI (prompt customizable via query param).
-  - All other requests (e.g., `/`) return static assets (the frontend HTML/JS in `dist/`).
-- **Load Balancing:**
-  - The Worker uses the `getRandom` helper from `@cloudflare/containers` to distribute API requests across multiple backend container instances.
+### Container Classes (`src/index.ts`)
 
-**Example:**
+#### GoBackend Class
+```typescript
+- Port: 8080
+- Sleep After: 2 hours
+- Autoscale: Enabled
+- Internet Access: Enabled
+- Lifecycle hooks: onStart(), onStop(), onError()
+```
 
-- `GET /api/api1` → Routed to a Go container instance
-- `GET /api/heavycompute` → Routed to a Go container instance, runs a heavy compute (Fibonacci) for load testing
-- `GET /api/responseheaders` → Routed to a Go container instance, returns the incoming request headers as JSON
-- `GET /run` → Health check for Linux Command Container
+#### LinuxCommandContainer Class
+```typescript
+- Port: 8081
+- Sleep After: 2 hours  
+- Autoscale: Enabled
+- Features:
+  - Automatic request timestamp storage in Durable Objects
+  - Simplified fetch() method for request proxying
+  - Persistent storage via ctx.storage
+```
+
+### Load Balancing
+The application uses `getRandom()` from `@cloudflare/containers` to distribute requests across 3 container instances for the Go backend, ensuring optimal performance and availability.
 - `POST /run` → Execute Linux commands securely (requires JSON body with `command` field)
 - `GET /kv` → Returns a value from Cloudflare KV storage
 - `GET /image?width=120&height=80` → Fetches and resizes an image from R2 to 120x80 (defaults to 100x100 if not specified)

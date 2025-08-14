@@ -18,7 +18,7 @@ export class GoBackend extends Container {
 
   envVars = {
     APP_ENV: "production",
-    SEVICE: "go",
+    SERVICE: "go",
     MESSAGE: "GoBackend - Start Time: " + new Date().toISOString(),
   };
 
@@ -39,7 +39,7 @@ export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
   autoscale = true;
-  dockerfile = "Dockerfile.linux";
+  //dockerfile = "Dockerfile.linux";
 
   envVars = {
     APP_ENV: "production",
@@ -59,27 +59,15 @@ export class LinuxCommandContainer extends Container {
     }
   }
 
-  // Override the Durable Object's fetch method to proxy requests to the container's fetch method
+  // Override the Durable Object's fetch method to proxy requests to the container's HTTP service
   async fetch(request: Request): Promise<Response> {
-    try {
-      await this.storeRequestTimestamp();
-
-      // Proxy the request to the container on the default port (8081)
-      const containerResponse = await this.containerFetch(
-        request,
-        this.defaultPort
-      );
-
-      return containerResponse;
-    } catch (error) {
-      console.error("Error proxying to container:", error);
-      return new Response(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-        {
-          status: 500,
-        }
-      );
-    }
+    await this.storeRequestTimestamp();
+    // Proxy the request to the container on the default port (8081)
+    const containerResponse = await this.containerFetch(
+      request,
+      this.defaultPort
+    );
+    return containerResponse;
   }
 }
 
