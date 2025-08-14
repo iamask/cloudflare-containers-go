@@ -69,14 +69,6 @@ export class LinuxCommandContainer extends Container {
     }
   }
 
-  async getLastRequestTimestamp(): Promise<string | null> {
-    const lastRequestTimestamp = (await this.ctx?.storage?.get(
-      "lastRequestTimestamp"
-    )) as string | null;
-    console.log("[DEBUG] Last request timestamp:", lastRequestTimestamp);
-    return lastRequestTimestamp;
-  }
-
   // Override the Durable Object's fetch method to proxy requests to the container's fetch method
   async fetch(request: Request): Promise<Response> {
     try {
