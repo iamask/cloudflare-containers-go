@@ -14,6 +14,7 @@ export class GoBackend extends Container {
   defaultPort = 8080;
   sleepAfter = "2h";
   autoscale = true;
+  enableInternet = true;
 
   envVars = {
     APP_ENV: "production",
@@ -53,10 +54,6 @@ export class LinuxCommandContainer extends Container {
     console.log("[DEBUG] DO initialized");
     super(ctx, env);
     this.ctx = ctx;
-  }
-
-  override onStart(): void {
-    console.log("Linux Command Container started!");
   }
 
   // Method to store current date/time when Durable Object proxies request to container
@@ -102,15 +99,6 @@ export class LinuxCommandContainer extends Container {
       );
     }
   }
-
-  override onStop() {
-    console.log("Linux Command Container shut down");
-  }
-
-  override onError(error: unknown): any {
-    console.error("Linux Command Container error:", error);
-    throw error;
-  }
 }
 
 const INSTANCE_COUNT = 3;
@@ -128,6 +116,8 @@ export default {
     // 2. Proxy request to external service
     if (url.pathname === "/test2") {
       let response = await fetch("https://httpbin.org/get");
+      response = new Response(response.body, response);
+      response.headers.set("x-custom-header", "cloudflare-worker");
       return response;
     }
 
@@ -168,11 +158,10 @@ export default {
 
     // 5. route request to the workers ai service
     if (url.pathname === "/ai") {
-      const prompt =
-        url.searchParams.get("prompt") ||
-        "What is the origin of the phrase Hello, World?";
+      const input = url.searchParams.get("prompt");
       const response = await env.AI.run("@cf/openai/gpt-oss-120b", {
-        prompt,
+        instructions: "You are a friendly agent",
+        input,
       });
       return new Response(JSON.stringify(response), {
         status: 200,
@@ -180,12 +169,12 @@ export default {
       });
     }
 
-    // 6. route request to the service worker
+    // 6. route request to another worker
     if (url.pathname.startsWith("/worker")) {
       return env.WORKER_SERVICE.fetch(request);
     }
 
-    // 7. route request to the backend container
+    // 7. route request to the Golang server container
     if (url.pathname.startsWith("/api")) {
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
       // containerInstance.fetch(request) is calling the Durable Object’s own fetch() method
