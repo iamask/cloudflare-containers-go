@@ -132,16 +132,6 @@ cloudflare-containers-go/
   - Persistent storage via ctx.storage
 ```
 
-### Load Balancing
-
-The application uses `getRandom()` from `@cloudflare/containers` to distribute requests across 3 container instances for the Go backend, ensuring optimal performance and availability.
-
-- `POST /run` → Execute Linux commands securely (requires JSON body with `command` field)
-- `GET /kv` → Returns a value from Cloudflare KV storage
-- `GET /image?width=120&height=80` → Fetches and resizes an image from R2 to 120x80 (defaults to 100x100 if not specified)
-- `GET /ai?prompt=...` → Runs inference using Workers AI with a custom prompt
-- `GET /` → Returns the static frontend page
-
 ---
 
 ## Service Bindings Configuration
@@ -162,38 +152,7 @@ The application uses comprehensive Cloudflare service bindings to integrate with
   - **Purpose:** Secure Linux command execution environment
   - **Recent Updates:** Refactored to use `containerFetch` for explicit port targeting (8081) and improved error handling
 
-### **Storage Bindings**
-
-- **`MY_KV`** → KV Namespace
-
-  - **Route:** `/kv`
-  - **ID:** `c2a03de4a9a54947bf56011ffb64a4d1`
-  - **Purpose:** Key-value storage for demo data
-
-- **`PUBLIC`** → R2 Bucket
-  - **Route:** `/image`
-  - **Bucket:** `public`
-  - **Purpose:** Object storage with image optimization
-
-### **AI & Compute Bindings**
-
-- **`AI`** → Workers AI
-  - **Route:** `/ai`
-  - **Purpose:** LLM inference using Cloudflare's AI models
-
-### **Worker-to-Worker Communication**
-
-- **`WORKER_SERVICE`** → Service Binding
-  - **Route:** `/worker/*`
-  - **Target:** `cloudflare-containers-go-service-worker`
-  - **Purpose:** Zero-latency inter-worker communication
-
-### **Security Bindings**
-
-- **`SECRET_STORE`** → Secrets Store
-  - **Store ID:** `17b1a325d8084ec087e87dda53cffd6b`
-  - **Secret:** `ACCOUNT_API_KEY`
-  - **Purpose:** Secure secret management (configured but not actively used)
+### ** Bindings**
 
 ### **Configuration in `wrangler.jsonc`:**
 
