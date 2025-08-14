@@ -48,24 +48,14 @@ export class LinuxCommandContainer extends Container {
       "Linux Command Container - Start Time: " + new Date().toISOString(),
   };
 
-  ctx: DurableObjectState;
-
-  constructor(ctx: DurableObjectState, env: any) {
-    console.log("[DEBUG] DO initialized");
-    super(ctx, env);
-    this.ctx = ctx;
-  }
-
   // Method to store current date/time when Durable Object proxies request to container
   async storeRequestTimestamp(): Promise<void> {
-    if (this.ctx?.storage) {
-      try {
-        const currentDateTime = new Date().toISOString();
-        await this.ctx.storage.put("lastRequestTimestamp", currentDateTime);
-        console.log("[DEBUG] Timestamp stored successfully");
-      } catch (error) {
-        console.error("[ERROR] Failed to store timestamp:", error);
-      }
+    try {
+      const currentDateTime = new Date().toISOString();
+      await this.ctx.storage.put("lastRequestTimestamp", currentDateTime);
+      console.log("[DEBUG] Timestamp stored successfully:", currentDateTime);
+    } catch (error) {
+      console.error("[ERROR] Failed to store timestamp:", error);
     }
   }
 
