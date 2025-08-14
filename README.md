@@ -2,7 +2,7 @@
 
 ## 🌍 Distributed Computing on Cloudflare's Global Network
 
-This project demonstrates a modern full-stack application built entirely on Cloudflare's platform, showcasing the power of edge computing with containerized workloads.
+This project demonstrates a modern full-stack application built entirely on Cloudflare's platform, showcasing the power of edge computing with containerized workloads using the [Cloudflare Containers](https://github.com/cloudflare/containers) library.
 
 > **"The Network is the Computer"** - Deploy to 300+ cities worldwide with a single command: `wrangler deploy`
 
@@ -15,7 +15,7 @@ This project demonstrates a modern full-stack application built entirely on Clou
 - **Object Storage:** R2 bucket with dynamic image optimization
 - **AI Inference:** Workers AI for LLM capabilities
 - **Service Bindings:** Worker-to-Worker communication
-- **Security:** Secrets Store integration
+- **Security:** Cloudflare DDoS, WAF, Bot Management etc
 
 ---
 
