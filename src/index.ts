@@ -13,13 +13,11 @@ export interface Env {
 export class GoBackend extends Container {
   defaultPort = 8080;
   sleepAfter = "2h";
-  autoscale = true;
   enableInternet = true;
 
   envVars = {
     APP_ENV: "production",
     SERVICE: "go",
-    MESSAGE: "GoBackend - Start Time: " + new Date().toISOString(),
   };
 
   override onStart(): void {
@@ -38,35 +36,20 @@ export class GoBackend extends Container {
 export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
-  autoscale = true;
-  //dockerfile = "Dockerfile.linux";
-
-  envVars = {
-    APP_ENV: "production",
-    SERVICE: "express.js-linux",
-    MESSAGE:
-      "Linux Command Container - Start Time: " + new Date().toISOString(),
-  };
 
   // Method to store current date/time when Durable Object proxies request to container
   async storeRequestTimestamp(): Promise<void> {
-    try {
-      const currentDateTime = new Date().toISOString();
-      await this.ctx.storage.put("lastRequestTimestamp", currentDateTime);
-      console.log("[DEBUG] Timestamp stored successfully:", currentDateTime);
-    } catch (error) {
-      console.error("[ERROR] Failed to store timestamp:", error);
-    }
+    const currentDateTime = new Date().toISOString();
+    await this.ctx.storage.put("lastRequestTimestamp", currentDateTime);
+    console.log("[DEBUG] Timestamp stored successfully:", currentDateTime);
   }
 
   // Override the Durable Object's fetch method to proxy requests to the container's HTTP service
   async fetch(request: Request): Promise<Response> {
     await this.storeRequestTimestamp();
     // Proxy the request to the container on the default port (8081)
-    const containerResponse = await this.containerFetch(
-      request,
-      this.defaultPort
-    );
+    const containerResponse = await this.containerFetch(request, this.defaultPort);
+    console.log("Last Request Timestamp: " + (await this.ctx.storage.get("lastRequestTimestamp")));
     return containerResponse;
   }
 }
@@ -154,10 +137,7 @@ export default {
 
     // 8. route request to the Linux command container
     if (url.pathname === "/run") {
-      const containerInstance = await getRandom(
-        env.LINUX_COMMAND,
-        INSTANCE_COUNT
-      );
+      const containerInstance = await getRandom(env.LINUX_COMMAND, INSTANCE_COUNT);
       const response = await containerInstance.fetch(request);
       console.log(`[DEBUG] Container response status: ${response.status}`);
       return response;
@@ -166,3 +146,9 @@ export default {
     return new Response("Not Found", { status: 404 });
   },
 };
+
+/*
+Command Palette
+Press Ctrl + Shift + P (Windows/Linux) or ⌘ + Shift + P (Mac).
+Type Fold All and hit Enter.
+*/
