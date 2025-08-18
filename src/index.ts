@@ -23,13 +23,6 @@ export class GoBackend extends Container {
   override onStart(): void {
     console.log("GoBackend Container started!");
   }
-  override onStop() {
-    console.log("GoBackend Container successfully shut down");
-  }
-  override onError(error: unknown): any {
-    console.error("GoBackend Container error:", error);
-    throw error;
-  }
 }
 
 // Express Linux Command Container
@@ -146,9 +139,3 @@ export default {
     return new Response("Not Found", { status: 404 });
   },
 };
-
-/*
-Command Palette
-Press Ctrl + Shift + P (Windows/Linux) or ⌘ + Shift + P (Mac).
-Type Fold All and hit Enter.
-*/
