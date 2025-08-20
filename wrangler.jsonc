@@ -23,12 +23,12 @@
 		{
 			"class_name": "GoBackend",
 			"image": "./Dockerfile.gobackend",
-			"max_instances": 2
+			"max_instances": 3
 		},
 		{
 			"class_name": "LinuxCommandContainer",
 			"image": "./Dockerfile.linux",
-			"max_instances": 2
+			"max_instances": 3
 		}
 	],
 	"durable_objects": {
@@ -67,7 +67,7 @@
 
 	"routes": [
 		{
-			"pattern": "go.zxc.co.in",
+			"pattern": "c3.zxc.co.in",
 			"custom_domain": true
 		  }
 	],

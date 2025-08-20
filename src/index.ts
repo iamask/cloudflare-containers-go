@@ -25,7 +25,7 @@ export class GoBackend extends Container {
   }
 }
 
-// Express Linux Command Container
+// Express Linux Command Container.
 export class LinuxCommandContainer extends Container {
   defaultPort = 8081;
   sleepAfter = "2h";
@@ -37,7 +37,7 @@ export class LinuxCommandContainer extends Container {
     console.log("[DEBUG] Timestamp stored successfully:", currentDateTime);
   }
 
-  // Override the Durable Object's fetch method to proxy requests to the container's HTTP service
+  // Override the Durable Object's fetch method
   async fetch(request: Request): Promise<Response> {
     await this.storeRequestTimestamp();
     // Proxy the request to the container on the default port (8081)
@@ -56,7 +56,7 @@ export default {
 
     // 1. Generate response from the worker
     if (url.pathname === "/test1") {
-      return new Response("Hello, World!", { status: 200 });
+      return new Response("Hello, World!!!", { status: 200 });
     }
 
     // 2. Proxy request to external service
@@ -102,7 +102,7 @@ export default {
       });
     }
 
-    // 5. route request to the workers ai service
+    // 5. route request to the workers ai service.
     if (url.pathname === "/ai") {
       const input = url.searchParams.get("prompt");
       const response = await env.AI.run("@cf/openai/gpt-oss-120b", {

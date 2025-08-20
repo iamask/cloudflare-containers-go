@@ -89,7 +89,7 @@ graph TB
 cloudflare-containers-go/
 ├── src/
 │   └── index.ts              # Main Worker entry point with routing logic
-├── container_src/            # Go backend container
+├── go_container_src/         # Go backend container
 │   ├── main.go              # HTTP server with API endpoints
 │   └── go.mod               # Go dependencies
 ├── linux_container_src/      # Linux command execution container
@@ -97,11 +97,13 @@ cloudflare-containers-go/
 │   └── package.json         # Node.js dependencies
 ├── dist/                     # Frontend assets
 │   └── index.html           # Interactive UI
-├── Dockerfile               # Go backend container image
+├── Dockerfile.gobackend     # Go backend container image
 ├── Dockerfile.linux         # Linux container image
 ├── wrangler.jsonc           # Cloudflare configuration
 ├── package.json             # Project dependencies
-└── README.md               # This file
+├── tsconfig.json            # TypeScript configuration
+├── worker-configuration.d.ts # Worker type definitions
+└── README.md
 ```
 
 ---
@@ -146,9 +148,7 @@ cloudflare-containers-go/
       { "class_name": "LinuxCommandContainer", "name": "LINUX_COMMAND" }
     ]
   },
-  "kv_namespaces": [
-    { "binding": "MY_KV", "id": "c2a03de4a9a54947bf56011ffb64a4d1" }
-  ],
+  "kv_namespaces": [{ "binding": "MY_KV", "id": "c2a03de4a9a54947bf56011ffb64a4d1" }],
   "r2_buckets": [{ "binding": "PUBLIC", "bucket_name": "public" }],
   "ai": { "binding": "AI" },
   "services": [
