@@ -67,7 +67,7 @@
 
 	"routes": [
 		{
-			"pattern": "c3.zxc.co.in",
+			"pattern": "www.example.com",
 			"custom_domain": true
 		  }
 	],
