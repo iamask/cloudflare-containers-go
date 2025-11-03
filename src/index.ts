@@ -10,6 +10,7 @@ export interface Env {
   WORKER_SERVICE: Fetcher;
 }
 //  GoBackend class for API
+// statefull layer for go backend
 export class GoBackend extends Container {
   defaultPort = 8080;
   sleepAfter = "2h";
