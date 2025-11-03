@@ -121,7 +121,7 @@ export default {
       return env.WORKER_SERVICE.fetch(request);
     }
 
-    // 7. route request to the Golang server container
+    // 7. route request to the Golang server container.
     if (url.pathname.startsWith("/api")) {
       const containerInstance = await getRandom(env.BACKEND, INSTANCE_COUNT);
       // containerInstance.fetch(request) is calling the Durable Object’s own fetch() method
