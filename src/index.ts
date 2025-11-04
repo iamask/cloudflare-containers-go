@@ -56,7 +56,7 @@ export default {
     const url = new URL(request.url);
 
     // 1. Generate response from the worker
-    if (url.pathname === "/test1") {
+    if (url.pathname === "/test1" && request.cf?.city === "Bengaluru") {
       return new Response("Hello, World!!!", { status: 200 });
     }
 
